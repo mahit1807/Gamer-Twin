@@ -58,6 +58,133 @@ const ACTION_ICONS: Record<string, string> = {
   'Neutral Steering / Movement': '🕹️',
 };
 
+// Plain English Explanation Helpers for B.Tech Faculty Presentation
+function cleanActionName(act: string): string {
+  if (!act) return 'Movement';
+  return act.replace(/\s*\([A-Z0-9/]+\)/g, '').trim();
+}
+
+function formatRecentGameplaySummary(history?: string[]): string {
+  if (!history || history.length === 0) {
+    return 'Steady movement and steering';
+  }
+  const cleaned = history.map((a) => cleanActionName(a));
+  const counts: Record<string, number> = {};
+  cleaned.forEach((a) => {
+    counts[a] = (counts[a] || 0) + 1;
+  });
+
+  const uniqueActions = Object.keys(counts);
+  if (uniqueActions.length === 1) {
+    const single = uniqueActions[0];
+    if (single.toLowerCase().includes('neutral') || single.toLowerCase().includes('movement')) {
+      return 'Consistent joystick movement and steering';
+    }
+    return `Sustained ${single.toLowerCase()}`;
+  }
+
+  const nonNeutral = uniqueActions.filter(
+    (a) => !a.toLowerCase().includes('neutral') && !a.toLowerCase().includes('movement')
+  );
+
+  if (nonNeutral.length === 0) {
+    return 'Continuous joystick movement and steady steering';
+  }
+  if (nonNeutral.length === 1) {
+    return `Movement combined with ${nonNeutral[0].toLowerCase()}`;
+  }
+  return nonNeutral.slice(0, 3).map((a) => a.toLowerCase()).join(', ');
+}
+
+function formatGameplayConditions(applied?: string[]): string {
+  if (!applied || applied.length === 0) {
+    return 'Standard gameplay sequence (no forced overrides)';
+  }
+  return applied
+    .map((c) => {
+      const lower = c.toLowerCase();
+      if (lower.includes('aim') || lower.includes('ads')) return 'Aiming down sights active';
+      if (lower.includes('fire')) return 'Fire trigger held';
+      if (lower.includes('jump')) return 'Jump input active';
+      if (lower.includes('reload')) return 'Reload initiated';
+      if (lower.includes('switch')) return 'Weapon switch active';
+      if (lower.includes('melee')) return 'Melee strike input';
+      return c;
+    })
+    .join(' · ');
+}
+
+function describeContinuousMovementPlain(cont?: {
+  strafe_lx: number;
+  move_ly: number;
+  turn_yaw_rx: number;
+  look_pitch_ry: number;
+}): { movementText: string; cameraText: string; fullSentence: string } {
+  if (!cont) {
+    return {
+      movementText: 'Little or no movement input',
+      cameraText: 'Steady camera',
+      fullSentence: 'The model estimates minimal joystick adjustments on the next frame.'
+    };
+  }
+
+  const { strafe_lx: lx, move_ly: ly, turn_yaw_rx: rx, look_pitch_ry: ry } = cont;
+
+  let movePart = 'stationary / little movement input';
+  if (ly >= 0.15 && Math.abs(lx) < 0.15) {
+    movePart = 'moving forward';
+  } else if (ly <= -0.15 && Math.abs(lx) < 0.15) {
+    movePart = 'moving backward';
+  } else if (ly >= 0.15 && lx >= 0.15) {
+    movePart = 'moving forward while strafing right';
+  } else if (ly >= 0.15 && lx <= -0.15) {
+    movePart = 'moving forward while strafing left';
+  } else if (ly <= -0.15 && lx >= 0.15) {
+    movePart = 'moving backward while strafing right';
+  } else if (ly <= -0.15 && lx <= -0.15) {
+    movePart = 'moving backward while strafing left';
+  } else if (Math.abs(ly) < 0.15 && lx >= 0.15) {
+    movePart = 'strafing right';
+  } else if (Math.abs(ly) < 0.15 && lx <= -0.15) {
+    movePart = 'strafing left';
+  }
+
+  let camPart = 'holding camera steady';
+  if (rx >= 0.15 && Math.abs(ry) < 0.15) {
+    camPart = 'turning the camera right';
+  } else if (rx <= -0.15 && Math.abs(ry) < 0.15) {
+    camPart = 'turning the camera left';
+  } else if (ry >= 0.15 && Math.abs(rx) < 0.15) {
+    camPart = 'looking upward';
+  } else if (ry <= -0.15 && Math.abs(rx) < 0.15) {
+    camPart = 'looking downward';
+  } else if (rx >= 0.15 && ry >= 0.15) {
+    camPart = 'turning right and looking upward';
+  } else if (rx >= 0.15 && ry <= -0.15) {
+    camPart = 'turning right and looking downward';
+  } else if (rx <= -0.15 && ry >= 0.15) {
+    camPart = 'turning left and looking upward';
+  } else if (rx <= -0.15 && ry <= -0.15) {
+    camPart = 'turning left and looking downward';
+  }
+
+  const fullSentence = `The model also estimates the player is ${movePart} while ${camPart}.`;
+
+  return {
+    movementText: movePart.charAt(0).toUpperCase() + movePart.slice(1),
+    cameraText: camPart.charAt(0).toUpperCase() + camPart.slice(1),
+    fullSentence
+  };
+}
+
+function cleanModelDisplayName(name?: string): string {
+  if (!name) return 'Transformer Encoder';
+  if (name.toLowerCase().includes('ssl')) return 'Self-Supervised Transformer';
+  if (name.toLowerCase().includes('transformer')) return 'Transformer Encoder';
+  if (name.toLowerCase().includes('lstm')) return 'LSTM Baseline';
+  return name;
+}
+
 export const PredictionStudio: React.FC = () => {
   // Step 1: Model Selection
   const [models, setModels] = useState<PredictionModelInfo[]>([]);
@@ -1171,50 +1298,120 @@ export const PredictionStudio: React.FC = () => {
             </div>
 
             {/* ============================================================== */}
-            {/* STEP 5 — WHY THIS PREDICTION? (Observable Explanation) */}
+            {/* STEP 5 — WHY THIS PREDICTION? (Plain English Observable Explanation) */}
             {/* ============================================================== */}
-            <div className="mt-6 pt-6 border-t border-[#EFE7DB] space-y-3">
-              <div className="flex items-center space-x-2">
-                <span className="w-7 h-7 rounded-full bg-[#C66A4E] text-white flex items-center justify-center text-xs font-bold">
-                  5
-                </span>
-                <h3 className="text-base font-bold text-[#302721]">Why this prediction?</h3>
-              </div>
+            {(() => {
+              const recentSummary = formatRecentGameplaySummary(predictionResult.trace.previous_observed_actions);
+              const conditionsSummary = formatGameplayConditions(predictionResult.applied_conditions);
+              const movementInfo = describeContinuousMovementPlain(predictionResult.continuous_prediction);
+              const modelDisplayName = cleanModelDisplayName(predictionResult.trace.model_name);
+              const predictedAction = predictionResult.trace.predicted_next_action;
+              const confidenceScore = predictionResult.trace.confidence;
+              const confidencePct =
+                confidenceScore !== undefined && confidenceScore !== null
+                  ? (confidenceScore <= 1 ? (confidenceScore * 100).toFixed(1) : confidenceScore.toFixed(1))
+                  : null;
 
-              <div className="p-4 rounded-xl bg-[#F8F5EF] border border-[#EFE7DB] text-xs text-[#302721] leading-relaxed">
-                {predictionResult.explanation}
-              </div>
+              return (
+                <div className="mt-6 pt-6 border-t border-[#EFE7DB] space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-7 h-7 rounded-full bg-[#C66A4E] text-white flex items-center justify-center text-xs font-bold">
+                      5
+                    </span>
+                    <h3 className="text-base font-bold text-[#302721]">Why this prediction?</h3>
+                  </div>
 
-              {/* Context Summary Table */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
-                <div className="p-3 rounded-lg bg-white border border-[#EFE7DB]">
-                  <span className="text-[10px] uppercase font-bold text-[#81786E]">Input History</span>
-                  <div className="mt-1 font-semibold text-[#302721] truncate">
-                    {predictionResult.trace.previous_observed_actions.join(', ')}
+                  {/* 2-3 Sentence Plain English Explanation */}
+                  <div className="p-4 rounded-xl bg-[#F8F5EF] border border-[#EFE7DB] text-xs sm:text-sm text-[#302721] leading-relaxed space-y-2">
+                    <p>
+                      The model looked at the player&apos;s recent gameplay inputs ({recentSummary}) in {predictionResult.game_name} over the preceding sequence to estimate the next controller action.
+                      {' '}
+                      Under {conditionsSummary === 'Standard gameplay sequence (no forced overrides)' ? 'these observed gameplay patterns' : `the selected conditions (${conditionsSummary})`}, the {modelDisplayName} predicts that the player will next perform <strong className="text-[#C66A4E] font-bold">{predictedAction}</strong>.
+                    </p>
+                    <p className="text-xs text-[#81786E]">
+                      {movementInfo.fullSentence}
+                      {confidencePct && (
+                        <>
+                          {' '}Model confidence estimate: <strong className="text-[#302721] font-semibold">{confidencePct}%</strong> (this reflects the model&apos;s learned statistical likelihood based on training telemetry, not a guarantee that the action will happen).
+                        </>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Four Compact Information Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs pt-1">
+                    {/* Card 1: Recent Gameplay */}
+                    <div className="p-3.5 rounded-xl bg-white border border-[#EFE7DB] flex flex-col justify-between space-y-2">
+                      <div className="flex items-center space-x-1.5 text-[#81786E]">
+                        <Clock className="w-3.5 h-3.5 text-[#C66A4E]" />
+                        <span className="text-[10px] uppercase font-bold tracking-wider">Recent Gameplay</span>
+                      </div>
+                      <div className="font-semibold text-[#302721] text-xs leading-snug">
+                        {recentSummary}
+                      </div>
+                      <div className="text-[10px] text-[#81786E]">
+                        Observed inputs across 16 frames
+                      </div>
+                    </div>
+
+                    {/* Card 2: Gameplay Conditions */}
+                    <div className="p-3.5 rounded-xl bg-white border border-[#EFE7DB] flex flex-col justify-between space-y-2">
+                      <div className="flex items-center space-x-1.5 text-[#81786E]">
+                        <Sliders className="w-3.5 h-3.5 text-[#C66A4E]" />
+                        <span className="text-[10px] uppercase font-bold tracking-wider">Gameplay Conditions</span>
+                      </div>
+                      <div className="font-semibold text-[#302721] text-xs leading-snug">
+                        {conditionsSummary}
+                      </div>
+                      <div className="text-[10px] text-[#81786E]">
+                        Active situation settings
+                      </div>
+                    </div>
+
+                    {/* Card 3: Model Used */}
+                    <div className="p-3.5 rounded-xl bg-white border border-[#EFE7DB] flex flex-col justify-between space-y-2">
+                      <div className="flex items-center space-x-1.5 text-[#81786E]">
+                        <Cpu className="w-3.5 h-3.5 text-[#C66A4E]" />
+                        <span className="text-[10px] uppercase font-bold tracking-wider">Model Used</span>
+                      </div>
+                      <div className="font-semibold text-[#302721] text-xs leading-snug">
+                        {modelDisplayName}
+                      </div>
+                      <div className="text-[10px] text-[#81786E]">
+                        Sequential pattern model
+                      </div>
+                    </div>
+
+                    {/* Card 4: Predicted Next Action */}
+                    <div className="p-3.5 rounded-xl bg-white border border-[#EFE7DB] flex flex-col justify-between space-y-2">
+                      <div className="flex items-center space-x-1.5 text-[#81786E]">
+                        <Zap className="w-3.5 h-3.5 text-[#C66A4E]" />
+                        <span className="text-[10px] uppercase font-bold tracking-wider">Predicted Next Action</span>
+                      </div>
+                      <div className="font-bold text-[#C66A4E] text-xs sm:text-sm leading-snug truncate">
+                        {predictedAction}
+                      </div>
+                      <div className="text-[10px] text-[#81786E]">
+                        {confidencePct ? `Confidence estimate: ${confidencePct}%` : 'Estimated next action'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Plain Language Continuous Movement Banner */}
+                  <div className="p-3 rounded-xl bg-white border border-[#EFE7DB] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center space-x-2">
+                      <Compass className="w-4 h-4 text-[#C66A4E] flex-shrink-0" />
+                      <span className="text-[#302721]">
+                        <strong>Continuous Movement:</strong> {movementInfo.movementText} · <strong>Camera:</strong> {movementInfo.cameraText}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-[#81786E]">
+                      Estimated analog joystick outputs in [-1.0, +1.0] range
+                    </span>
                   </div>
                 </div>
-                <div className="p-3 rounded-lg bg-white border border-[#EFE7DB]">
-                  <span className="text-[10px] uppercase font-bold text-[#81786E]">Condition Overrides</span>
-                  <div className="mt-1 font-semibold text-[#302721] truncate">
-                    {predictionResult.applied_conditions.length > 0
-                      ? predictionResult.applied_conditions.join(', ')
-                      : 'Baseline Sequence'}
-                  </div>
-                </div>
-                <div className="p-3 rounded-lg bg-white border border-[#EFE7DB]">
-                  <span className="text-[10px] uppercase font-bold text-[#81786E]">Architecture</span>
-                  <div className="mt-1 font-semibold text-[#302721] truncate">
-                    {predictionResult.trace.model_name}
-                  </div>
-                </div>
-                <div className="p-3 rounded-lg bg-white border border-[#EFE7DB]">
-                  <span className="text-[10px] uppercase font-bold text-[#81786E]">Forecasted Action</span>
-                  <div className="mt-1 font-semibold text-[#C66A4E] truncate">
-                    {predictionResult.trace.predicted_next_action}
-                  </div>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Optional What-If Expansion Button */}
             <div className="pt-4 border-t border-[#EFE7DB] flex flex-wrap items-center justify-between gap-3">
@@ -1238,12 +1435,25 @@ export const PredictionStudio: React.FC = () => {
 
             {/* Collapsible Technical Details */}
             {showTechDetails && (
-              <div className="p-4 rounded-xl bg-[#F8F5EF] border border-[#EFE7DB] text-xs font-mono space-y-1 text-[#81786E]">
-                <div>Sequence ID: <span className="text-[#302721]">{predictionResult.trace.sequence_id}</span></div>
-                <div>Clip Source: <span className="text-[#302721]">{predictionResult.trace.player_id}</span></div>
-                <div>Checkpoint: <span className="text-[#302721]">{predictionResult.trace.checkpoint_file}</span></div>
-                <div>Input Tensor Dimensions: <span className="text-[#302721]">[1, 16, 10] (T=16 frames, 10-DoF)</span></div>
-                <div>Inference Time: <span className="text-[#302721]">{predictionResult.trace.timestamp}</span></div>
+              <div className="p-4 rounded-xl bg-[#F8F5EF] border border-[#EFE7DB] text-xs font-mono space-y-2 text-[#81786E]">
+                <div className="font-sans font-bold text-[#302721] text-xs pb-1.5 border-b border-[#EFE7DB] flex items-center justify-between">
+                  <span>Raw Model & Telemetry Diagnostics</span>
+                  <span className="text-[11px] font-normal text-[#81786E]">For technical audit & debugging</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 pt-1">
+                  <div>Sequence ID: <span className="text-[#302721]">{predictionResult.trace.sequence_id}</span></div>
+                  <div>Clip Source: <span className="text-[#302721]">{predictionResult.trace.player_id}</span></div>
+                  <div>Checkpoint File: <span className="text-[#302721]">{predictionResult.trace.checkpoint_file}</span></div>
+                  <div>Input Tensor Shape: <span className="text-[#302721]">[1, 16, 10] (16 frames × 10 DoF)</span></div>
+                  <div>
+                    Analog Movement Axes: <span className="text-[#302721]">LX={predictionResult.continuous_prediction.strafe_lx}, LY={predictionResult.continuous_prediction.move_ly}</span>
+                  </div>
+                  <div>
+                    Analog Camera Axes: <span className="text-[#302721]">RX={predictionResult.continuous_prediction.turn_yaw_rx}, RY={predictionResult.continuous_prediction.look_pitch_ry}</span>
+                  </div>
+                  <div>Inference Timestamp: <span className="text-[#302721]">{predictionResult.trace.timestamp}</span></div>
+                  <div>Raw Confidence Score: <span className="text-[#302721]">{predictionResult.trace.confidence}</span></div>
+                </div>
               </div>
             )}
           </div>
