@@ -1,0 +1,72 @@
+{
+  "dataset_name": "CrossFPS: Multi-Game FPS World Model Telemetry Dataset",
+  "official_repo_train": "https://huggingface.co/datasets/zizhaotong/CrossFPS-train",
+  "official_repo_val": "https://huggingface.co/datasets/zizhaotong/CrossFPS-val",
+  "license": "CC BY-NC 4.0",
+  "gate_status": "DATASET_PARTIALLY_AVAILABLE",
+  "gate_message": "CrossFPS download active in data/CrossFPS-train (6.92 GB downloaded of 120.1 GB total). Validation metadata verified (3443 evaluation clips across 7 FPS titles). Drive C: free space is 87.76 GB.",
+  "active_data_source": "CrossFPS (zizhaotong/CrossFPS-train & CrossFPS-val)",
+  "is_synthetic": false,
+  "repo_clone_status": "DOWNLOAD_ACTIVE",
+  "train_download_size_gb": 6.92,
+  "train_total_size_gb": 120.1,
+  "free_disk_space_gb": 87.76,
+  "validation_metadata_verified": true,
+  "total_records": 3443,
+  "features_available": [
+    "LX",
+    "LY",
+    "RX",
+    "RY",
+    "RT",
+    "LT",
+    "R3",
+    "A",
+    "X",
+    "Y"
+  ],
+  "supported_games": [
+    "halo_infinite",
+    "worldcam_xonotic",
+    "mw",
+    "halo",
+    "call_of_duty__warzone",
+    "call_of_duty__modern_warfare_iii",
+    "call_of_duty"
+  ],
+  "game_distribution": {
+    "halo_infinite": 1622,
+    "worldcam_xonotic": 522,
+    "mw": 442,
+    "halo": 410,
+    "call_of_duty__warzone": 240,
+    "call_of_duty__modern_warfare_iii": 182,
+    "call_of_duty": 25
+  },
+  "telemetry_channels": [
+    "LX",
+    "LY",
+    "RX",
+    "RY",
+    "RT",
+    "LT",
+    "R3",
+    "A",
+    "X",
+    "Y"
+  ],
+  "temporal_resolution": {
+    "fps": 20.0,
+    "clip_duration_seconds": 5.0,
+    "frames_per_clip": 100
+  },
+  "confirmed_unavailable_fields": [
+    "map_name (CrossFPS is multi-game across 7 titles without map tags)",
+    "player_health (HP not recorded)",
+    "ammunition_count (ammo not recorded)",
+    "player_id (anonymized for privacy under CC BY-NC 4.0)"
+  ],
+  "required_next_actions": [
+    "Local disk warning: Full CrossFPS-train requires 120.1 GB, but drive C: has 87.76 GB free. Prioritize downloading CrossFPS-val (6.27 GB, 2,065 clips across 7 FPS titles) to avoid disk exhaustion."
+  ]
+}

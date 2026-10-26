@@ -1,0 +1,224 @@
+{
+  "dataset": "CrossFPS 10-DoF Frame-Aligned Controller Telemetry",
+  "evaluation_split": "Held-Out Test Set (Clip-Group Split, 0% Sequence Leakage)",
+  "models": {
+    "lstm_baseline": {
+      "name": "2-Layer LSTM Recurrent Baseline",
+      "checkpoint": "lstm_crossfps_best.pt",
+      "metrics": {
+        "test_samples": 10859,
+        "continuous_mse": 0.0276,
+        "multi_label_accuracy": 0.9179,
+        "macro_f1": 0.7065,
+        "weighted_f1": 0.7913,
+        "precision_macro": 0.7959,
+        "recall_macro": 0.6534,
+        "per_action_metrics": {
+          "RT": {
+            "f1": 0.761,
+            "precision": 0.763,
+            "recall": 0.759,
+            "positive_rate": 0.045
+          },
+          "LT": {
+            "f1": 0.951,
+            "precision": 0.958,
+            "recall": 0.945,
+            "positive_rate": 0.08
+          },
+          "R3": {
+            "f1": 0.756,
+            "precision": 0.794,
+            "recall": 0.721,
+            "positive_rate": 0.059
+          },
+          "A": {
+            "f1": 0.553,
+            "precision": 0.856,
+            "recall": 0.408,
+            "positive_rate": 0.026
+          },
+          "X": {
+            "f1": 0.711,
+            "precision": 0.756,
+            "recall": 0.671,
+            "positive_rate": 0.014
+          },
+          "Y": {
+            "f1": 0.507,
+            "precision": 0.648,
+            "recall": 0.417,
+            "positive_rate": 0.008
+          }
+        }
+      },
+      "history": {
+        "train_loss": [
+          0.1567,
+          0.0884,
+          0.0837,
+          0.0816,
+          0.08
+        ],
+        "val_loss": [
+          0.0931,
+          0.0842,
+          0.0806,
+          0.0803,
+          0.079
+        ]
+      }
+    },
+    "transformer_primary": {
+      "name": "Transformer Encoder Next-Action Digital Twin",
+      "checkpoint": "transformer_crossfps_best.pt",
+      "metrics": {
+        "test_samples": 10859,
+        "continuous_mse": 0.0275,
+        "multi_label_accuracy": 0.9146,
+        "macro_f1": 0.7253,
+        "weighted_f1": 0.7925,
+        "precision_macro": 0.7532,
+        "recall_macro": 0.704,
+        "per_action_metrics": {
+          "RT": {
+            "f1": 0.765,
+            "precision": 0.752,
+            "recall": 0.777,
+            "positive_rate": 0.045
+          },
+          "LT": {
+            "f1": 0.951,
+            "precision": 0.958,
+            "recall": 0.945,
+            "positive_rate": 0.08
+          },
+          "R3": {
+            "f1": 0.702,
+            "precision": 0.806,
+            "recall": 0.621,
+            "positive_rate": 0.059
+          },
+          "A": {
+            "f1": 0.657,
+            "precision": 0.733,
+            "recall": 0.596,
+            "positive_rate": 0.026
+          },
+          "X": {
+            "f1": 0.742,
+            "precision": 0.747,
+            "recall": 0.737,
+            "positive_rate": 0.014
+          },
+          "Y": {
+            "f1": 0.535,
+            "precision": 0.523,
+            "recall": 0.548,
+            "positive_rate": 0.008
+          }
+        }
+      },
+      "history": {
+        "train_loss": [
+          0.1045,
+          0.086,
+          0.0835,
+          0.0821,
+          0.0812
+        ],
+        "val_loss": [
+          0.0847,
+          0.0813,
+          0.0817,
+          0.0809,
+          0.0795
+        ]
+      }
+    },
+    "transformer_ssl": {
+      "name": "Self-Supervised Transformer",
+      "checkpoint": "transformer_ssl_crossfps_best.pt",
+      "role": "Self-Supervised Representation Variant",
+      "pretraining_stage": {
+        "objective": "Masked Controller-Feature Reconstruction (Unlabeled sequences)",
+        "mask_prob": 0.2,
+        "pretrain_sequences": 50872,
+        "reconstruction_loss_history": [
+          0.01987,
+          0.01841,
+          0.01789,
+          0.01754,
+          0.01721
+        ]
+      },
+      "metrics": {
+        "test_samples": 10859,
+        "continuous_mse": 0.0271,
+        "multi_label_accuracy": 0.9124,
+        "macro_f1": 0.7063,
+        "weighted_f1": 0.7791,
+        "precision_macro": 0.7709,
+        "recall_macro": 0.6575,
+        "per_action_metrics": {
+          "RT": {
+            "f1": 0.748,
+            "precision": 0.799,
+            "recall": 0.703,
+            "positive_rate": 0.045
+          },
+          "LT": {
+            "f1": 0.951,
+            "precision": 0.958,
+            "recall": 0.945,
+            "positive_rate": 0.08
+          },
+          "R3": {
+            "f1": 0.692,
+            "precision": 0.787,
+            "recall": 0.617,
+            "positive_rate": 0.059
+          },
+          "A": {
+            "f1": 0.603,
+            "precision": 0.726,
+            "recall": 0.516,
+            "positive_rate": 0.026
+          },
+          "X": {
+            "f1": 0.726,
+            "precision": 0.728,
+            "recall": 0.724,
+            "positive_rate": 0.014
+          },
+          "Y": {
+            "f1": 0.517,
+            "precision": 0.627,
+            "recall": 0.44,
+            "positive_rate": 0.008
+          }
+        }
+      },
+      "history": {
+        "train_loss": [
+          0.1266,
+          0.0854,
+          0.0832,
+          0.082,
+          0.0813
+        ],
+        "val_loss": [
+          0.0834,
+          0.0815,
+          0.081,
+          0.08,
+          0.0783
+        ]
+      },
+      "disclosures": {
+        "data_partition_note": "Trained and evaluated on held-out clip partitions of the available CrossFPS validation partition (data/CrossFPS-val/). Not presented as an independent production test benchmark.",
+        "protocol": "Zero-leakage clip-based partition: 70% train, 15% validation, 15% test."
+      }
+    }
+  }
+}

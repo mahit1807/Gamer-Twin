@@ -1,0 +1,129 @@
+# GAMER-TWIN Configuration File
+project:
+  name: "GAMER-TWIN"
+  title: "A Personalized Deep Learning Framework for Modeling and Predicting Player Behaviour"
+  subtitle: "A Transformer-Based Digital Twin for Next-Action Prediction in Interactive Games"
+  institution: "Symbiosis Institute of Technology, Pune"
+  department: "Artificial Intelligence and Machine Learning"
+  students:
+    - "Mahit Turakhia"
+    - "Het Shah"
+  faculty: "Dr. Ananya Bhattacharjee"
+  random_seed: 42
+
+data:
+  # Path to EgoCS-400K or demo data
+  raw_dir: "data/raw"
+  sample_dir: "data/sample_data"
+  processed_dir: "outputs/processed"
+  
+  # Target Action Classes (exact 9 project classes)
+  target_classes:
+    - "Fire"
+    - "Reload"
+    - "Switch Weapon"
+    - "Inspect"
+    - "Scope"
+    - "Grenade"
+    - "Jump"
+    - "Crouch"
+    - "Move"
+
+  # Expected Schema Mapping from Raw EgoCS-400K telemetry
+  schema_mapping:
+    timestamp_col: "tick"
+    seconds_col: "seconds"
+    player_id_col: "player_id"
+    round_id_col: "round_id"
+    action_event_col: "action"
+
+    # Supported Numerical Continuous Features
+    numerical_features:
+      - "pos_x"
+      - "pos_y"
+      - "pos_z"
+      - "vel_x"
+      - "vel_y"
+      - "vel_z"
+      - "view_pitch"
+      - "view_yaw"
+      - "delta_pitch"
+      - "delta_yaw"
+      - "ammo"
+      - "health"
+
+    # Supported Binary / Categorical Features
+    binary_features:
+      - "in_forward"
+      - "in_back"
+      - "in_moveleft"
+      - "in_moveright"
+      - "in_attack"
+      - "in_reload"
+      - "in_jump"
+      - "in_duck"
+      - "is_scoped"
+
+    categorical_features:
+      - "active_weapon"
+      - "prev_action"
+
+sequence:
+  window_size: 16
+  stride: 2
+  target_offset: 1   # Predict next tick action
+
+split:
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  split_strategy: "round_id"  # Group-split to avoid temporal data leakage across splits
+
+models:
+  common:
+    hidden_dim: 64
+    dropout: 0.1
+    num_classes: 9
+  
+  lstm_baseline:
+    num_layers: 2
+    bidirectional: false
+  
+  lstm_transformer:
+    lstm_layers: 1
+    transformer_layers: 1
+    num_heads: 4
+    dim_feedforward: 128
+  
+  transformer:
+    num_layers: 2
+    num_heads: 4
+    dim_feedforward: 128
+  
+  transformer_ssl:
+    num_layers: 2
+    num_heads: 4
+    dim_feedforward: 128
+    ssl_mask_prob: 0.20
+    ssl_pretrain_epochs: 5
+    ssl_learning_rate: 0.001
+
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  epochs: 10
+  early_stopping_patience: 4
+  device: "auto"
+
+evaluation:
+  top_k: 3
+  metrics:
+    - "accuracy"
+    - "precision_macro"
+    - "precision_weighted"
+    - "recall_macro"
+    - "recall_weighted"
+    - "f1_macro"
+    - "f1_weighted"
+    - "top_k_accuracy"

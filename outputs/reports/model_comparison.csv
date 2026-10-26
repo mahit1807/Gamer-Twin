@@ -1,0 +1,5 @@
+Model Variant,Data Provenance,Accuracy,Top-3 Accuracy,F1-Score (Macro),F1-Score (Weighted),Precision (Macro),Recall (Macro),Test Samples,Status
+lstm_baseline,SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation),0.5417,0.724,0.0781,0.3806,0.0602,0.1111,192,Evaluated
+lstm_transformer,SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation),0.5417,0.6979,0.0781,0.3806,0.0602,0.1111,192,Evaluated
+transformer,SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation),0.5417,0.724,0.0781,0.3806,0.0602,0.1111,192,Evaluated
+transformer_ssl,SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation),0.5417,0.724,0.0781,0.3806,0.0602,0.1111,192,Evaluated

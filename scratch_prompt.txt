@@ -1,0 +1,140 @@
+<USER_REQUEST>
+# GAMER-TWIN — STRICT REAL-DATA-ONLY REFACTOR
+
+## Objective
+
+Modify the existing GAMER-TWIN project so that **every data-driven feature uses only the actual downloaded CrossFPS validation dataset and genuine outputs from the existing trained models**.
+
+We currently have CrossFPS validation data available, containing 3,443 extracted clips, and trained PyTorch checkpoints reportedly exist. The full CrossFPS training partition is not available because its download was cancelled due to storage limitations.
+
+For this implementation, use the available validation data as the project's sole available dataset. Do not wait for the full training partition before making the existing data usable throughout the website.
+
+**Do not download or substitute another dataset. Do not use synthetic data, mock records, fabricated statistics, random predictions, placeholder probabilities, or hardcoded gameplay examples anywhere in the functioning application.**
+
+Preserve the existing React website, backend, preprocessing pipeline, trained checkpoints, and useful functionality. Inspect the code before changing it.
+
+## 1. Audit the entire codebase first
+
+Search the complete frontend and backend for every source of synthetic or placeholder data, including:
+
+- Random data generation.
+- Mock API responses.
+- Hardcoded player profiles or gameplay sessions.
+- Fake action sequences.
+- Fabricated maps, game titles, or environment options.
+- Hardcoded predictions and class probabilities.
+- Fake model metrics or confusion matrices.
+- Placeholder chart arrays.
+- Sample users or prefilled gameplay records.
+- Fallback responses that return fake data after an API error.
+- Demo-data buttons or automatic sample loaders.
+- Frontend constants that masquerade as dataset-derived results.
+
+Inspect all relevant files in the frontend, backend, tests, data-loading modules, and model inference code.
+
+Produce an inventory of the synthetic-data sources before modifying them.
+
+Do not confuse static explanatory text, interface labels, or empty-state illustrations with synthetic dataset records. Those may remain if they do not claim to represent actual gameplay.
+
+## 2. Establish CrossFPS as the only data source
+
+Use the actual extracted files under:
+
+`data/CrossFPS-val/extracted/eval/`
+
+Use the actual metadata under:
+
+`data/CrossFPS-val/`
+
+First inspect the exact directory structure and locate the genuine telemetry files, including `actions_raw.parquet` where present.
+
+Read the actual files through the existing data pipeline. Do not reconstruct records from summaries or copy examples into frontend source code.
+
+Implement a single authoritative dataset-loading service that provides validated access to:
+
+- Available clip IDs.
+- Available game titles, if supported by real metadata.
+- Real controller-action sequences.
+- Actual feature values.
+- Observed action frequencies.
+- Real gameplay statistics.
+- Valid sequence windows.
+- Ground-truth next actions where available.
+
+Derive all counts and options from the actual files. Never hardcode the reported 3,443 clips or 72,597 windows as constants; calculate the current counts from verified data.
+
+If a file is absent, corrupted, incomplete, or incompatible, return an explicit error instead of silently substituting another source.
+
+Do not use cached synthetic data left over from previous development.
+
+## 3. Keep the existing trained models, but verify them
+
+Locate the actual model checkpoints, including files such as:
+
+- `lstm_crossfps_best.pt`
+- `transformer_crossfps_best.pt`
+
+These filenames are expected examples. Verify the actual paths and contents before using them.
+
+For each checkpoint:
+
+- Confirm that the file exists and is readable.
+- Load it using the correct model architecture.
+- Validate the saved feature schema and label mappings.
+- Confirm the expected input dimensions and sequence length.
+- Check compatibility with the actual CrossFPS preprocessing pipeline.
+- Run inference on a real sequence from the downloaded dataset.
+- Compare the prediction with the correct ground-truth target when available.
+
+Do not recreate missing checkpoints with fabricated weights or load an unrelated pretrained model.
+
+If a checkpoint cannot be loaded, display the real reason and disable the affected prediction function until the problem is resolved.
+
+The current models reportedly were trained using the available validation partition. Preserve that provenance accurately. Do not claim the validation data is an independent test set or that the model was trained on the unavailable full training partition.
+
+## 4. Remove synthetic data from My Gameplay
+
+Route: `/gameplay`
+
+This page must show statistics derived exclusively from actual CrossFPS records or valid user uploads that have been processed through the supported real-data pipeline.
+
+Required behaviour:
+
+- Populate available clips and sequences from the actual dataset.
+- Show genuine controller-action distributions.
+- Display actual action timelines from real clips.
+- Show real feature ranges and sequence lengths.
+- Display available game titles only if they occur in the actual metadata.
+- Derive counts from successfully loaded records.
+- Make charts respond to the selected real clip or sequence.
+
+Remove any sample profile loader that inserts fabricated player data.
+
+Do not invent a personal identity for a CrossFPS clip. If the dataset does not identify a real individual player, label the selection as a dataset clip rather than a personalized gamer profile.
+
+For user uploads, accept only formats supported by the existing preprocessing pipeline. Validate the schema and process the actual file before showing statistics.
+
+If an uploaded video does not contain usable action telemetry and the project has no implemented video-to-telemetry extraction pipeline, explain that the video cannot yet be analysed directly.
+
+If the user has not uploaded a compatible file and no dataset clip is selected, show a clear empty state.
+
+## 5. Remove synthetic data from Next Prediction
+
+Route: `/predict`
+
+This page must invoke the real backend model with an actual sequence from the downloaded CrossFPS data or a compatible, validated
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-25T15:39:08+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\turak\OneDrive\Desktop\DLL\reports\dataset_audit.md (LANGUAGE_MARKDOWN)
+Cursor is on line: 1
+Other open documents:
+- c:\Users\turak\OneDrive\Desktop\DLL\reports\dataset_audit.md (LANGUAGE_MARKDOWN)
+- c:\Users\turak\OneDrive\Desktop\DLL\src\train_crossfps.py (LANGUAGE_PYTHON)
+- c:\Users\turak\OneDrive\Desktop\DLL\src\dataset_audit.py (LANGUAGE_PYTHON)
+Browser State:
+  Page FA4900FFFD98CC34777F2AEB36B196BC (frontend) - http://127.0.0.1:3000/evaluation [ACTIVE]
+    Viewport: 1536x730, Page Height: 2207
+</ADDITIONAL_METADATA>

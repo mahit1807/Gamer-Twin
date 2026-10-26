@@ -1,0 +1,44 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Node modules & build
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Datasets (EgoCS-400K and CrossFPS raw/extracted files - do NOT commit real dataset)
+data/raw/
+data/egocs/
+data/CrossFPS-val/
+Dataset/
+*.dem
+*.csv.gz
+*.tar.gz
+*.zip
+*.parquet
+*.npz
+outputs/processed/embeddings_cache_*.json
+
+# Deep learning models & checkpoints
+*.pt
+*.pth
+*.onnx
+outputs/checkpoints/*.pt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jupyter / Colab
+.ipynb_checkpoints/
+

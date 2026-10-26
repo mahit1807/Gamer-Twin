@@ -1,0 +1,66 @@
+{
+  "sequence_parameters": {
+    "window_size": 16,
+    "stride": 2,
+    "target_offset": 1,
+    "feature_dim": 23
+  },
+  "split_counts": {
+    "train_sequences": 768,
+    "val_sequences": 192,
+    "test_sequences": 192,
+    "total_sequences": 1152
+  },
+  "records_audit": {
+    "train": {
+      "initial_records": 1600,
+      "usable_records": 1600,
+      "excluded_records": 0
+    },
+    "val": {
+      "initial_records": 400,
+      "usable_records": 400,
+      "excluded_records": 0
+    },
+    "test": {
+      "initial_records": 400,
+      "usable_records": 400,
+      "excluded_records": 0
+    }
+  },
+  "target_class_counts": {
+    "train": {
+      "Fire": 71,
+      "Reload": 43,
+      "Switch Weapon": 31,
+      "Inspect": 24,
+      "Scope": 46,
+      "Grenade": 20,
+      "Jump": 55,
+      "Crouch": 50,
+      "Move": 428
+    },
+    "val": {
+      "Fire": 18,
+      "Reload": 4,
+      "Switch Weapon": 12,
+      "Inspect": 4,
+      "Scope": 14,
+      "Grenade": 6,
+      "Jump": 13,
+      "Crouch": 17,
+      "Move": 104
+    },
+    "test": {
+      "Fire": 16,
+      "Reload": 8,
+      "Switch Weapon": 7,
+      "Inspect": 6,
+      "Scope": 12,
+      "Grenade": 6,
+      "Jump": 19,
+      "Crouch": 14,
+      "Move": 104
+    }
+  }
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "Model Variant": "lstm_baseline",
+    "Data Provenance": "SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation)",
+    "Accuracy": 0.5417,
+    "Top-3 Accuracy": 0.724,
+    "F1-Score (Macro)": 0.0781,
+    "F1-Score (Weighted)": 0.3806,
+    "Precision (Macro)": 0.0602,
+    "Recall (Macro)": 0.1111,
+    "Test Samples": 192,
+    "Status": "Evaluated"
+  },
+  {
+    "Model Variant": "lstm_transformer",
+    "Data Provenance": "SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation)",
+    "Accuracy": 0.5417,
+    "Top-3 Accuracy": 0.6979,
+    "F1-Score (Macro)": 0.0781,
+    "F1-Score (Weighted)": 0.3806,
+    "Precision (Macro)": 0.0602,
+    "Recall (Macro)": 0.1111,
+    "Test Samples": 192,
+    "Status": "Evaluated"
+  },
+  {
+    "Model Variant": "transformer",
+    "Data Provenance": "SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation)",
+    "Accuracy": 0.5417,
+    "Top-3 Accuracy": 0.724,
+    "F1-Score (Macro)": 0.0781,
+    "F1-Score (Weighted)": 0.3806,
+    "Precision (Macro)": 0.0602,
+    "Recall (Macro)": 0.1111,
+    "Test Samples": 192,
+    "Status": "Evaluated"
+  },
+  {
+    "Model Variant": "transformer_ssl",
+    "Data Provenance": "SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation)",
+    "Accuracy": 0.5417,
+    "Top-3 Accuracy": 0.724,
+    "F1-Score (Macro)": 0.0781,
+    "F1-Score (Weighted)": 0.3806,
+    "Precision (Macro)": 0.0602,
+    "Recall (Macro)": 0.1111,
+    "Test Samples": 192,
+    "Status": "Evaluated"
+  }
+]
