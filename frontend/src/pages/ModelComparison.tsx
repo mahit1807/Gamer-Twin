@@ -86,7 +86,7 @@ export const ModelComparison: React.FC = () => {
     name: m.model_display_name,
     id: m.model_variant,
     accuracy: Number((m.accuracy * 100).toFixed(2)),
-    top_3_accuracy: Number((m.top_3_accuracy * 100).toFixed(2)),
+    top_3_accuracy: Number(((m.top_3_accuracy ?? 0) * 100).toFixed(2)),
     f1_macro: Number((m.f1_macro * 100).toFixed(2)),
     f1_weighted: Number((m.f1_weighted * 100).toFixed(2)),
     precision_macro: Number((m.precision_macro * 100).toFixed(2)),
@@ -176,7 +176,7 @@ export const ModelComparison: React.FC = () => {
                         {(c.accuracy * 100).toFixed(2)}%
                       </td>
                       <td className="py-3 px-3 font-mono font-semibold text-[#82917A] text-right">
-                        {(c.top_3_accuracy * 100).toFixed(2)}%
+                        {((c.top_3_accuracy ?? 0) * 100).toFixed(2)}%
                       </td>
                       <td className="py-3 px-3 font-mono text-[#81786E] text-right">
                         {(c.f1_macro * 100).toFixed(2)}%

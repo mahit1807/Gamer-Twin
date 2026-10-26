@@ -277,8 +277,27 @@ def get_supported_games():
     return {"total_games": len(games), "games": games}
 
 
+@router.get("/verified-demo-sequences")
+def get_verified_demo_sequences():
+    """
+    Returns the fixed list of genuine, pre-verified presentation sequences
+    from data/verified_demo_sequences.json.
+    Includes exact clip IDs, input frame windows, ground truth targets,
+    and verified model prediction outputs with pass/fail evaluation rules.
+    """
+    manifest_path = WORKSPACE_ROOT / "data" / "verified_demo_sequences.json"
+    if not manifest_path.exists():
+        raise HTTPException(status_code=404, detail="Verified demo sequences manifest not found.")
+
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    return data
+
+
 @router.get("/sequences")
 def list_available_sequences(
+
     limit: int = Query(50, ge=1, le=200),
     game: Optional[str] = Query(None)
 ):

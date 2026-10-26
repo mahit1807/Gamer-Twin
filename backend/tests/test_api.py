@@ -260,3 +260,21 @@ def test_prediction_with_condition_overrides():
     assert "what_if_prediction" in wi_data
     assert "probability_shifts_pct" in wi_data
     assert "continuous_shifts" in wi_data
+
+
+def test_verified_demo_sequences():
+    resp = client.get("/api/predict/verified-demo-sequences")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "total_verified" in data
+    assert "sequences" in data
+    assert data["total_verified"] >= 5
+    first_seq = data["sequences"][0]
+    assert "clip_id" in first_seq
+    assert "target_frame" in first_seq
+    assert "ground_truth" in first_seq
+    assert "model_results" in first_seq
+    assert "transformer" in first_seq["model_results"]
+    assert "evaluation_rule" in first_seq["model_results"]["transformer"]
+    assert "passed" in first_seq["model_results"]["transformer"]
+

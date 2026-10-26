@@ -144,19 +144,25 @@ export interface ModelComparisonItem {
   model_variant: string;
   model_display_name: string;
   data_provenance: string;
+  checkpoint?: string;
+  continuous_mse?: number;
+  multi_label_accuracy?: number;
   accuracy: number;
-  top_3_accuracy: number;
+  top_3_accuracy?: number;
   f1_macro: number;
   f1_weighted: number;
   precision_macro: number;
   recall_macro: number;
   test_samples: number;
   status: string;
+  is_available?: boolean;
+  per_action_metrics?: Record<string, { f1: number; precision: number; recall: number; positive_rate: number }>;
   per_class_metrics?: Record<string, { precision: number; recall: number; f1_score: number; support: number }>;
   confusion_matrix?: number[][];
   training_loss_history?: number[];
   validation_loss_history?: number[];
 }
+
 
 export interface ActionTransition {
   from_action: string;
@@ -386,61 +392,54 @@ export interface ControllerTelemetryStats {
   camera_label: string;
 }
 
-export interface GameplayEmbeddingPoint {
-  id: string;
-  sequence_index: number;
-  clip_id: string;
-  game: string;
-  game_name: string;
-  genre: string;
-  x: number;
-  y: number;
-  dominant_action: string;
-  controller_stats: ControllerTelemetryStats;
-  summary: string;
-}
-
-export interface GameplayEmbeddingsResponse {
-  model_id: string;
-  model_name: string;
+export interface VerifiedDemoSequenceResult {
   checkpoint: string;
-  embedding_dim: number;
-  reduction_method: string;
-  explained_variance_ratio: number[];
-  total_variance_explained_pct: number;
-  total_sequences_embedded: number;
-  total_sequences_available: number;
-  data_provenance: string;
-  scientific_disclosure: string;
-  legend: {
-    games: Record<string, string>;
-    actions: Record<string, string>;
+  model_name: string;
+  predicted_continuous: {
+    strafe_lx: number;
+    move_ly: number;
+    turn_yaw_rx: number;
+    look_pitch_ry: number;
   };
-  points: GameplayEmbeddingPoint[];
+  predicted_discrete_probs: Record<string, number>;
+  predicted_actions: string[];
+  predicted_action_label: string;
+  continuous_mse: number;
+  discrete_match: boolean;
+  evaluation_rule: string;
+  verification_status: string;
+  passed: boolean;
 }
 
-export interface SequenceFrameDetail {
-  frame: number;
-  lx: number;
-  ly: number;
-  rx: number;
-  ry: number;
-  rt_fire: number;
-  lt_ads: number;
-  r3_melee: number;
-  a_jump: number;
-  x_reload: number;
-  y_switch: number;
-}
-
-export interface SequenceDetailResponse {
+export interface VerifiedDemoSequence {
+  sequence_id: string;
   sequence_index: number;
   clip_id: string;
-  game: string;
-  target_next_action: string;
-  target_action_idx: number;
-  frames: SequenceFrameDetail[];
+  source_game: string;
+  game_name: string;
+  input_frame_range: [number, number];
+  target_frame: number;
+  ground_truth: {
+    continuous: {
+      strafe_lx: number;
+      move_ly: number;
+      turn_yaw_rx: number;
+      look_pitch_ry: number;
+    };
+    discrete: {
+      rt_fire: number;
+      lt_ads: number;
+      r3_melee: number;
+      a_jump: number;
+      x_reload: number;
+      y_switch: number;
+    };
+    active_actions: string[];
+    action_label: string;
+  };
+  model_results: Record<string, VerifiedDemoSequenceResult>;
 }
+
 
 // Fetch helper with error handling
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
@@ -575,11 +574,10 @@ export const api = {
   // Methodology
   getMethodologyInfo: () => fetchJson<any>('/methodology/info'),
 
-  // Player Behaviour Embeddings & Gameplay Pattern Explorer
-  getGameplayEmbeddings: (modelName = 'transformer', sampleSize = 600, refresh = false) =>
-    fetchJson<GameplayEmbeddingsResponse>(
-      `/embeddings?model_name=${encodeURIComponent(modelName)}&sample_size=${sampleSize}&refresh=${refresh}`
+  // Tested Presentation Demo Sequences
+  getVerifiedDemoSequences: () =>
+    fetchJson<{ total_verified: number; evaluation_rule_summary: string; sequences: VerifiedDemoSequence[] }>(
+      '/predict/verified-demo-sequences'
     ),
-  getSequenceDetail: (sequenceIndex: number) =>
-    fetchJson<SequenceDetailResponse>(`/embeddings/sequence/${sequenceIndex}`),
 };
+

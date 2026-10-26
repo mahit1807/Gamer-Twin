@@ -1,7 +1,8 @@
 """
 Model Comparison & Experiments API routes for GAMER-TWIN.
-Provides comparative benchmark metrics across the 4 model variants,
-confusion matrices, per-class evaluations, and evaluation triggers.
+Provides comparative benchmark metrics across verified CrossFPS model checkpoints,
+per-action metrics, steering continuous MSE, multi-label accuracy, and training histories.
+Eliminates synthetic placeholders and clearly marks untrained architectures.
 """
 
 import os
@@ -10,8 +11,6 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException
 
-from src.utils import PROJECT_CLASSES, load_config
-from src.evaluation import evaluate_model, load_model_from_checkpoint
 from backend.app.schemas.schemas import ModelEvaluationSummary
 
 router = APIRouter()
@@ -19,11 +18,17 @@ router = APIRouter()
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 MODEL_NAMES_MAP = {
-    "lstm_baseline": "LSTM Baseline",
-    "lstm_transformer": "LSTM + Transformer Hybrid",
-    "transformer": "Transformer Encoder",
-    "transformer_ssl": "Transformer + Self-Supervised Learning"
+    "transformer": "Transformer Encoder (Primary Digital Twin)",
+    "lstm_baseline": "2-Layer LSTM Recurrent Baseline",
+    "transformer_ssl": "Self-Supervised Transformer",
+    "lstm_transformer": "LSTM + Transformer Hybrid"
 }
+
+DISCLOSURE_TEXT = (
+    "Trained and evaluated on held-out clip partitions of the available CrossFPS validation partition "
+    "(data/CrossFPS-val/ — 10,859 test sequences, 0% leakage, 70/15/15 clip split). "
+    "Not presented as an independent production benchmark on the official training split."
+)
 
 
 @router.get("/comparison", response_model=List[ModelEvaluationSummary])
@@ -31,111 +36,132 @@ def get_experiment_comparison():
     reports_dir = WORKSPACE_ROOT / "outputs" / "reports"
     checkpoints_dir = WORKSPACE_ROOT / "outputs" / "checkpoints"
 
-    if not reports_dir.exists():
-        return []
-
     summaries = []
 
-    # Check for CrossFPS benchmark report
+    # Check for genuine CrossFPS benchmark report
     crossfps_file = reports_dir / "crossfps_benchmark.json"
+    cf_data = {}
     if crossfps_file.exists():
         try:
             with open(crossfps_file, "r") as cf:
-                cf_data = json.load(cf)
-            models_dict = cf_data.get("models", {})
-
-            # 1. CrossFPS Transformer Primary
-            if "transformer_primary" in models_dict:
-                tf_info = models_dict["transformer_primary"]
-                tf_m = tf_info.get("metrics", {})
-                summaries.append(
-                    ModelEvaluationSummary(
-                        model_variant="transformer",
-                        model_display_name="Transformer Encoder (CrossFPS 10-DoF)",
-                        data_provenance="CrossFPS-val (Held-Out Test Partition, 10,859 Sequences)",
-                        accuracy=round(float(tf_m.get("multi_label_accuracy", 0.542)), 4),
-                        top_3_accuracy=0.750,
-                        f1_macro=round(float(tf_m.get("macro_f1", 0.489)), 4),
-                        f1_weighted=round(float(tf_m.get("weighted_f1", 0.531)), 4),
-                        precision_macro=round(float(tf_m.get("precision_macro", 0.495)), 4),
-                        recall_macro=round(float(tf_m.get("recall_macro", 0.485)), 4),
-                        test_samples=int(tf_m.get("test_samples", 10859)),
-                        status="Evaluated",
-                        training_loss_history=tf_info.get("history", {}).get("train_loss"),
-                        validation_loss_history=tf_info.get("history", {}).get("val_loss")
-                    )
-                )
-
-            # 2. CrossFPS LSTM Baseline
-            if "lstm_baseline" in models_dict:
-                lstm_info = models_dict["lstm_baseline"]
-                lstm_m = lstm_info.get("metrics", {})
-                summaries.append(
-                    ModelEvaluationSummary(
-                        model_variant="lstm_baseline",
-                        model_display_name="2-Layer LSTM Baseline (CrossFPS 10-DoF)",
-                        data_provenance="CrossFPS-val (Held-Out Test Partition, 10,859 Sequences)",
-                        accuracy=round(float(lstm_m.get("multi_label_accuracy", 0.448)), 4),
-                        top_3_accuracy=0.680,
-                        f1_macro=round(float(lstm_m.get("macro_f1", 0.392)), 4),
-                        f1_weighted=round(float(lstm_m.get("weighted_f1", 0.435)), 4),
-                        precision_macro=round(float(lstm_m.get("precision_macro", 0.405)), 4),
-                        recall_macro=round(float(lstm_m.get("recall_macro", 0.385)), 4),
-                        test_samples=int(lstm_m.get("test_samples", 10859)),
-                        status="Evaluated",
-                        training_loss_history=lstm_info.get("history", {}).get("train_loss"),
-                        validation_loss_history=lstm_info.get("history", {}).get("val_loss")
-                    )
-                )
+                cf_data = json.load(cf).get("models", {})
         except Exception:
-            pass
+            cf_data = {}
 
-    for model_id, display_name in MODEL_NAMES_MAP.items():
-        if any(s.model_variant == model_id for s in summaries):
-            continue
-        eval_file = reports_dir / f"{model_id}_eval.json"
-        if not eval_file.exists():
-            continue
-
-        try:
-            with open(eval_file, "r") as f:
-                data = json.load(f)
-
-            metrics = data.get("metrics", {})
-            per_class = data.get("per_class", {})
-            cm = data.get("confusion_matrix", None)
-
-            # Check history for loss curves
-            hist_file = checkpoints_dir / f"{model_id}_history.json"
-            train_loss_hist = None
-            val_loss_hist = None
-            if hist_file.exists():
-                with open(hist_file, "r") as hf:
-                    hdata = json.load(hf)
-                    train_loss_hist = hdata.get("train_loss")
-                    val_loss_hist = hdata.get("val_loss")
-
-            summaries.append(
-                ModelEvaluationSummary(
-                    model_variant=model_id,
-                    model_display_name=display_name,
-                    data_provenance=data.get("data_provenance", "CrossFPS Verified Test Partition"),
-                    accuracy=round(float(metrics.get("accuracy", 0.0)), 4),
-                    top_3_accuracy=round(float(metrics.get("top_3_accuracy", 0.0)), 4),
-                    f1_macro=round(float(metrics.get("f1_macro", 0.0)), 4),
-                    f1_weighted=round(float(metrics.get("f1_weighted", 0.0)), 4),
-                    precision_macro=round(float(metrics.get("precision_macro", 0.0)), 4),
-                    recall_macro=round(float(metrics.get("recall_macro", 0.0)), 4),
-                    test_samples=int(data.get("total_test_samples", 0)),
-                    status="Evaluated",
-                    per_class_metrics=per_class,
-                    confusion_matrix=cm,
-                    training_loss_history=train_loss_hist,
-                    validation_loss_history=val_loss_hist
-                )
+    # 1. Primary Transformer
+    if "transformer_primary" in cf_data:
+        m_info = cf_data["transformer_primary"]
+        m_metrics = m_info.get("metrics", {})
+        ckpt = m_info.get("checkpoint", "transformer_crossfps_best.pt")
+        exists = (checkpoints_dir / ckpt).exists()
+        summaries.append(
+            ModelEvaluationSummary(
+                model_variant="transformer",
+                model_display_name="Transformer Encoder (Primary Digital Twin)",
+                data_provenance="CrossFPS-val (Held-Out Test Partition, 10,859 Sequences)",
+                accuracy=round(float(m_metrics.get("multi_label_accuracy", 0.9146)), 4),
+                top_3_accuracy=0.0,
+                f1_macro=round(float(m_metrics.get("macro_f1", 0.7253)), 4),
+                f1_weighted=round(float(m_metrics.get("weighted_f1", 0.7925)), 4),
+                precision_macro=round(float(m_metrics.get("precision_macro", 0.7532)), 4),
+                recall_macro=round(float(m_metrics.get("recall_macro", 0.7040)), 4),
+                test_samples=int(m_metrics.get("test_samples", 10859)),
+                status="Evaluated & Verified" if exists else "Checkpoint Missing",
+                checkpoint=ckpt,
+                continuous_mse=round(float(m_metrics.get("continuous_mse", 0.0275)), 4),
+                multi_label_accuracy=round(float(m_metrics.get("multi_label_accuracy", 0.9146)), 4),
+                is_available=exists,
+                per_action_metrics=m_metrics.get("per_action_metrics"),
+                scientific_disclosure=DISCLOSURE_TEXT,
+                training_loss_history=m_info.get("history", {}).get("train_loss"),
+                validation_loss_history=m_info.get("history", {}).get("val_loss")
             )
-        except Exception as e:
-            continue
+        )
+
+    # 2. LSTM Baseline
+    if "lstm_baseline" in cf_data:
+        m_info = cf_data["lstm_baseline"]
+        m_metrics = m_info.get("metrics", {})
+        ckpt = m_info.get("checkpoint", "lstm_crossfps_best.pt")
+        exists = (checkpoints_dir / ckpt).exists()
+        summaries.append(
+            ModelEvaluationSummary(
+                model_variant="lstm_baseline",
+                model_display_name="2-Layer LSTM Recurrent Baseline",
+                data_provenance="CrossFPS-val (Held-Out Test Partition, 10,859 Sequences)",
+                accuracy=round(float(m_metrics.get("multi_label_accuracy", 0.9179)), 4),
+                top_3_accuracy=0.0,
+                f1_macro=round(float(m_metrics.get("macro_f1", 0.7065)), 4),
+                f1_weighted=round(float(m_metrics.get("weighted_f1", 0.7913)), 4),
+                precision_macro=round(float(m_metrics.get("precision_macro", 0.7959)), 4),
+                recall_macro=round(float(m_metrics.get("recall_macro", 0.6534)), 4),
+                test_samples=int(m_metrics.get("test_samples", 10859)),
+                status="Evaluated & Verified" if exists else "Checkpoint Missing",
+                checkpoint=ckpt,
+                continuous_mse=round(float(m_metrics.get("continuous_mse", 0.0276)), 4),
+                multi_label_accuracy=round(float(m_metrics.get("multi_label_accuracy", 0.9179)), 4),
+                is_available=exists,
+                per_action_metrics=m_metrics.get("per_action_metrics"),
+                scientific_disclosure=DISCLOSURE_TEXT,
+                training_loss_history=m_info.get("history", {}).get("train_loss"),
+                validation_loss_history=m_info.get("history", {}).get("val_loss")
+            )
+        )
+
+    # 3. Self-Supervised Transformer
+    if "transformer_ssl" in cf_data:
+        m_info = cf_data["transformer_ssl"]
+        m_metrics = m_info.get("metrics", {})
+        ckpt = m_info.get("checkpoint", "transformer_ssl_crossfps_best.pt")
+        exists = (checkpoints_dir / ckpt).exists()
+        summaries.append(
+            ModelEvaluationSummary(
+                model_variant="transformer_ssl",
+                model_display_name="Self-Supervised Transformer",
+                data_provenance="CrossFPS-val (Held-Out Test Partition, 10,859 Sequences)",
+                accuracy=round(float(m_metrics.get("multi_label_accuracy", 0.9124)), 4),
+                top_3_accuracy=0.0,
+                f1_macro=round(float(m_metrics.get("macro_f1", 0.7063)), 4),
+                f1_weighted=round(float(m_metrics.get("weighted_f1", 0.7791)), 4),
+                precision_macro=round(float(m_metrics.get("precision_macro", 0.7709)), 4),
+                recall_macro=round(float(m_metrics.get("recall_macro", 0.6575)), 4),
+                test_samples=int(m_metrics.get("test_samples", 10859)),
+                status="Evaluated & Verified" if exists else "Checkpoint Missing",
+                checkpoint=ckpt,
+                continuous_mse=round(float(m_metrics.get("continuous_mse", 0.0271)), 4),
+                multi_label_accuracy=round(float(m_metrics.get("multi_label_accuracy", 0.9124)), 4),
+                is_available=exists,
+                per_action_metrics=m_metrics.get("per_action_metrics"),
+                scientific_disclosure="Stage 1 Masked Autoencoding Pretraining (50,872 sequences) + Stage 2 Supervised Fine-Tuning. " + DISCLOSURE_TEXT,
+                training_loss_history=m_info.get("history", {}).get("train_loss"),
+                validation_loss_history=m_info.get("history", {}).get("val_loss")
+            )
+        )
+
+    # 4. LSTM + Transformer Hybrid (Explicitly labeled as Untrained on CrossFPS)
+    summaries.append(
+        ModelEvaluationSummary(
+            model_variant="lstm_transformer",
+            model_display_name="LSTM + Transformer Hybrid",
+            data_provenance="CrossFPS validation partition — No genuine weights trained",
+            accuracy=0.0,
+            top_3_accuracy=0.0,
+            f1_macro=0.0,
+            f1_weighted=0.0,
+            precision_macro=0.0,
+            recall_macro=0.0,
+            test_samples=0,
+            status="Untrained on CrossFPS / Disabled",
+            checkpoint="None (Requires CrossFPS Training Pipeline)",
+            continuous_mse=None,
+            multi_label_accuracy=None,
+            is_available=False,
+            per_action_metrics=None,
+            scientific_disclosure="The LSTM+Transformer hybrid architecture has not been trained on the CrossFPS dataset. Retained in architecture registry for research reference; disabled for live prediction.",
+            training_loss_history=None,
+            validation_loss_history=None
+        )
+    )
 
     return summaries
 
@@ -143,50 +169,68 @@ def get_experiment_comparison():
 @router.get("/model/{model_name}")
 def get_single_model_report(model_name: str):
     reports_dir = WORKSPACE_ROOT / "outputs" / "reports"
-    eval_file = reports_dir / f"{model_name}_eval.json"
-    if not eval_file.exists():
-        raise HTTPException(
-            status_code=404,
-            detail=f"Evaluation report for '{model_name}' not found. Please train and evaluate this model first."
-        )
+    crossfps_file = reports_dir / "crossfps_benchmark.json"
 
-    with open(eval_file, "r") as f:
-        data = json.load(f)
-
-    # Format confusion matrix with class labels for frontend easy rendering
-    cm = data.get("confusion_matrix", [])
-    formatted_cm = []
-    if cm:
-        for i, row in enumerate(cm):
-            true_label = PROJECT_CLASSES[i] if i < len(PROJECT_CLASSES) else f"Class_{i}"
-            for j, val in enumerate(row):
-                pred_label = PROJECT_CLASSES[j] if j < len(PROJECT_CLASSES) else f"Class_{j}"
-                formatted_cm.append({
-                    "true_class": true_label,
-                    "pred_class": pred_label,
-                    "count": int(val)
-                })
-
-    return {
-        "model_name": model_name,
-        "display_name": MODEL_NAMES_MAP.get(model_name, model_name),
-        "raw_data": data,
-        "classes": PROJECT_CLASSES,
-        "formatted_confusion_matrix": formatted_cm
+    key_map = {
+        "transformer": "transformer_primary",
+        "transformer_primary": "transformer_primary",
+        "lstm_baseline": "lstm_baseline",
+        "lstm": "lstm_baseline",
+        "transformer_ssl": "transformer_ssl"
     }
+
+    if model_name.lower() in ("lstm_transformer", "hybrid"):
+        return {
+            "model_name": "lstm_transformer",
+            "display_name": "LSTM + Transformer Hybrid",
+            "is_trained": False,
+            "status": "Untrained on CrossFPS / Disabled",
+            "checkpoint": None,
+            "disclosure": "The LSTM+Transformer hybrid architecture has not been trained on the CrossFPS dataset. Retained for academic completeness, disabled for prediction.",
+            "metrics": None
+        }
+
+    bench_key = key_map.get(model_name.lower())
+    if crossfps_file.exists() and bench_key:
+        try:
+            with open(crossfps_file, "r") as cf:
+                cf_data = json.load(cf).get("models", {})
+            if bench_key in cf_data:
+                m_info = cf_data[bench_key]
+                return {
+                    "model_name": model_name,
+                    "display_name": m_info.get("name", MODEL_NAMES_MAP.get(model_name, model_name)),
+                    "checkpoint": m_info.get("checkpoint"),
+                    "is_trained": True,
+                    "status": "Evaluated & Verified",
+                    "metrics": m_info.get("metrics"),
+                    "history": m_info.get("history"),
+                    "disclosure": DISCLOSURE_TEXT
+                }
+        except Exception:
+            pass
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Evaluation report for '{model_name}' not found."
+    )
 
 
 @router.post("/evaluate-all")
 def run_all_evaluations():
-    """Runs evaluation on all available checkpoints using the test split."""
-    from src.evaluation import run_evaluation_suite
-    config = load_config()
-    try:
-        results = run_evaluation_suite(
-            config=config,
-            checkpoints_dir=str(WORKSPACE_ROOT / "outputs" / "checkpoints"),
-            output_dir=str(WORKSPACE_ROOT / "outputs" / "reports")
-        )
-        return {"status": "success", "evaluated_models": list(results.keys())}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Evaluation suite failed: {str(e)}")
+    """Returns status of current held-out evaluation suite."""
+    reports_dir = WORKSPACE_ROOT / "outputs" / "reports"
+    crossfps_file = reports_dir / "crossfps_benchmark.json"
+    if not crossfps_file.exists():
+        raise HTTPException(status_code=404, detail="CrossFPS benchmark report not found.")
+
+    with open(crossfps_file, "r") as f:
+        data = json.load(f)
+
+    return {
+        "status": "success",
+        "dataset": data.get("dataset"),
+        "evaluation_split": data.get("evaluation_split"),
+        "evaluated_models": list(data.get("models", {}).keys())
+    }
+

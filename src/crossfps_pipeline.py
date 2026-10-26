@@ -190,23 +190,16 @@ class CrossFPSTransformerModel(nn.Module):
             nn.Linear(32, 6)  # 6 discrete binary action logits
         )
 
-    def extract_embeddings(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Extracts fixed-length latent sequence embeddings (d_model=64) from the Transformer encoder.
-        Pooling: Combines temporal sequence mean pooling and the final frame representation.
-        """
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        # x: [Batch, T, input_dim]
         b, t, d = x.shape
         h = self.input_proj(x) + self.pos_encoder[:, :t, :]
         encoded = self.transformer(h)
         context = encoded.mean(dim=1) + encoded[:, -1, :]
-        return context
-
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        # x: [Batch, T, input_dim]
-        context = self.extract_embeddings(x)
         pred_continuous = self.head_continuous(context)
         pred_discrete = self.head_discrete(context)
         return pred_continuous, pred_discrete
+
 
 
 class CrossFPSLSTMBaseline(nn.Module):
@@ -228,18 +221,13 @@ class CrossFPSLSTMBaseline(nn.Module):
             nn.Linear(32, 6)
         )
 
-    def extract_embeddings(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Extracts fixed-length recurrent hidden representation (hidden_dim=64) from the LSTM baseline.
-        """
-        _, (h_n, _) = self.lstm(x)
-        return h_n[-1]
-
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        last_hidden = self.extract_embeddings(x)
+        _, (h_n, _) = self.lstm(x)
+        last_hidden = h_n[-1]
         pred_continuous = self.head_continuous(last_hidden)
         pred_discrete = self.head_discrete(last_hidden)
         return pred_continuous, pred_discrete
+
 
 
 class CrossFPSTransformerSSL(nn.Module):
@@ -311,23 +299,17 @@ class CrossFPSTransformerSSL(nn.Module):
         reconstructed = self.ssl_reconstruction_head(encoded)
         return reconstructed, mask
 
-    def extract_embeddings(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Extracts fixed-length latent sequence embeddings (d_model=64) from the Self-Supervised Transformer.
-        """
-        b, t, d = x.shape
-        h = self.input_proj(x) + self.pos_encoder[:, :t, :]
-        encoded = self.transformer(h)
-        context = encoded.mean(dim=1) + encoded[:, -1, :]
-        return context
-
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Stage 2 forward pass:
         Predicts continuous movement trajectory and discrete button activations.
         """
-        context = self.extract_embeddings(x)
+        b, t, d = x.shape
+        h = self.input_proj(x) + self.pos_encoder[:, :t, :]
+        encoded = self.transformer(h)
+        context = encoded.mean(dim=1) + encoded[:, -1, :]
         pred_continuous = self.head_continuous(context)
         pred_discrete = self.head_discrete(context)
         return pred_continuous, pred_discrete
+
 

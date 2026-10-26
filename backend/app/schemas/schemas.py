@@ -155,17 +155,24 @@ class ModelEvaluationSummary(BaseModel):
     model_display_name: str
     data_provenance: str
     accuracy: float
-    top_3_accuracy: float
+    top_3_accuracy: float = 0.0
     f1_macro: float
     f1_weighted: float
     precision_macro: float
     recall_macro: float
     test_samples: int
     status: str
+    checkpoint: Optional[str] = None
+    continuous_mse: Optional[float] = None
+    multi_label_accuracy: Optional[float] = None
+    is_available: bool = True
+    per_action_metrics: Optional[Dict[str, Dict[str, float]]] = None
+    scientific_disclosure: Optional[str] = None
     per_class_metrics: Optional[Dict[str, Dict[str, float]]] = None
     confusion_matrix: Optional[List[List[int]]] = None
     training_loss_history: Optional[List[float]] = None
     validation_loss_history: Optional[List[float]] = None
+
 
 
 # --- Player Behaviour Signature Schemas ---

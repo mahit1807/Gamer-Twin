@@ -25,7 +25,6 @@ from backend.app.api import (
     routes_signature,
     routes_methodology,
     routes_gameplay,
-    routes_embeddings,
 )
 
 app = FastAPI(
@@ -57,7 +56,7 @@ app.include_router(routes_experiments.router, prefix="/api/evaluation", tags=["E
 app.include_router(routes_signature.router, prefix="/api/signature", tags=["Player Signature"])
 app.include_router(routes_methodology.router, prefix="/api/methodology", tags=["Methodology"])
 app.include_router(routes_gameplay.router, prefix="/api/gameplay", tags=["Gameplay"])
-app.include_router(routes_embeddings.router, prefix="/api/embeddings", tags=["Embeddings"])
+
 
 
 @app.get("/")

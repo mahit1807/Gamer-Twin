@@ -1,5 +1,5 @@
-Model Variant,Data Provenance,Accuracy,Top-3 Accuracy,F1-Score (Macro),F1-Score (Weighted),Precision (Macro),Recall (Macro),Test Samples,Status
-lstm_baseline,SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation),0.5417,0.724,0.0781,0.3806,0.0602,0.1111,192,Evaluated
-lstm_transformer,SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation),0.5417,0.6979,0.0781,0.3806,0.0602,0.1111,192,Evaluated
-transformer,SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation),0.5417,0.724,0.0781,0.3806,0.0602,0.1111,192,Evaluated
-transformer_ssl,SYNTHETIC_TEST_FIXTURE (Demo / Pipeline Validation),0.5417,0.724,0.0781,0.3806,0.0602,0.1111,192,Evaluated
+Model Variant,Checkpoint,Data Provenance,Continuous Steering MSE,Multi-Label Accuracy,Macro-F1,Weighted-F1,Precision (Macro),Recall (Macro),Test Samples,Status
+2-Layer LSTM Recurrent Baseline,lstm_crossfps_best.pt,"CrossFPS-val (Held-Out Test Partition, 0% Leakage)",0.0276,0.9179,0.7065,0.7913,0.7959,0.6534,10859,Evaluated & Verified
+Transformer Encoder Next-Action Digital Twin,transformer_crossfps_best.pt,"CrossFPS-val (Held-Out Test Partition, 0% Leakage)",0.0275,0.9146,0.7253,0.7925,0.7532,0.704,10859,Evaluated & Verified
+Self-Supervised Transformer,transformer_ssl_crossfps_best.pt,"CrossFPS-val (Held-Out Test Partition, 0% Leakage)",0.0271,0.9124,0.7063,0.7791,0.7709,0.6575,10859,Evaluated & Verified
+LSTM + Transformer Hybrid,None (Untrained on CrossFPS),CrossFPS-val — No genuine weights trained,,,,,,,0,Untrained on CrossFPS / Disabled

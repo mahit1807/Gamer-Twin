@@ -21,7 +21,9 @@ import {
   ChevronUp,
   Info,
   Check,
-  Compass
+  Compass,
+  Star,
+  Target
 } from 'lucide-react';
 import {
   api,
@@ -31,8 +33,10 @@ import {
   ConditionOverrides,
   PredictResponse,
   WhatIfDetailedResponse,
-  RankedProbability
+  RankedProbability,
+  VerifiedDemoSequence
 } from '../services/api';
+
 
 const ACTION_COLORS: Record<string, string> = {
   'Fire (RT)': '#C66A4E',
@@ -69,7 +73,12 @@ export const PredictionStudio: React.FC = () => {
   const [sequences, setSequences] = useState<GameSequence[]>([]);
   const [selectedSeqIndex, setSelectedSeqIndex] = useState<number>(0);
   const [sequencesLoading, setSequencesLoading] = useState(false);
-  const [inputMode, setInputMode] = useState<'real_sequence' | 'custom_situation'>('real_sequence');
+  const [inputMode, setInputMode] = useState<'tested_demo' | 'real_sequence' | 'custom_situation'>('tested_demo');
+
+  // Tested Presentation Demo Sequences
+  const [demoSequences, setDemoSequences] = useState<VerifiedDemoSequence[]>([]);
+  const [selectedDemoId, setSelectedDemoId] = useState<string>('');
+  const [demoLoading, setDemoLoading] = useState<boolean>(false);
 
   // 10-DoF Supported Condition Overrides
   const [conditions, setConditions] = useState<ConditionOverrides>({
@@ -79,6 +88,7 @@ export const PredictionStudio: React.FC = () => {
     fire: false,
     jump: false,
     reload: false,
+
     switch_weapon: false,
     melee: false
   });
@@ -148,7 +158,24 @@ export const PredictionStudio: React.FC = () => {
         console.error('Failed to load games:', err);
         setGamesLoading(false);
       });
+
+    // Fetch verified presentation demo sequences
+    setDemoLoading(true);
+    api.getVerifiedDemoSequences()
+      .then((res) => {
+        const seqList = res.sequences || [];
+        setDemoSequences(seqList);
+        if (seqList.length > 0) {
+          setSelectedDemoId(seqList[0].sequence_id);
+        }
+        setDemoLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load verified demo sequences:', err);
+        setDemoLoading(false);
+      });
   }, [paramModel, paramGame]);
+
 
   // 2. When selected game changes, load real sequences for that game
   useEffect(() => {
@@ -524,8 +551,19 @@ export const PredictionStudio: React.FC = () => {
             </div>
           </div>
 
-          {/* Mode Switcher: Real Sequence vs Custom Situation */}
-          <div className="flex items-center p-1 rounded-xl bg-[#F8F5EF] border border-[#EFE7DB] self-start sm:self-auto">
+          {/* Mode Switcher: Tested Demo vs Real Sequence vs Custom Situation */}
+          <div className="flex flex-wrap items-center p-1 rounded-xl bg-[#F8F5EF] border border-[#EFE7DB] self-start sm:self-auto gap-1">
+            <button
+              onClick={() => setInputMode('tested_demo')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${
+                inputMode === 'tested_demo'
+                  ? 'bg-[#C66A4E] text-white shadow-xs'
+                  : 'text-[#81786E] hover:text-[#302721]'
+              }`}
+            >
+              <Star className="w-3.5 h-3.5 fill-current" />
+              <span>Tested Demo Sequences</span>
+            </button>
             <button
               onClick={() => setInputMode('real_sequence')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -534,7 +572,7 @@ export const PredictionStudio: React.FC = () => {
                   : 'text-[#81786E] hover:text-[#302721]'
               }`}
             >
-              Use Real Gameplay Sequence
+              Browse All Sequences ({sequences.length})
             </button>
             <button
               onClick={() => setInputMode('custom_situation')}
@@ -549,8 +587,196 @@ export const PredictionStudio: React.FC = () => {
           </div>
         </div>
 
+        {/* Input Source: Tested Presentation Demo Sequences */}
+        {inputMode === 'tested_demo' && (
+          <div className="space-y-4 pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label className="text-xs font-bold text-[#302721] flex items-center">
+                <Star className="w-3.5 h-3.5 text-[#C66A4E] mr-1.5 fill-current" />
+                Select a Tested Presentation Sequence ({demoSequences.length} Verified Clips):
+              </label>
+              <span className="text-[11px] text-[#059669] font-semibold bg-[#059669]/10 px-2 py-0.5 rounded border border-[#059669]/20">
+                Pre-Checked Real Ground Truth & Neural Predictions
+              </span>
+            </div>
+
+            {demoLoading ? (
+              <div className="p-6 text-center text-xs text-[#81786E] bg-[#F8F5EF] rounded-xl border border-[#EFE7DB]">
+                Loading verified presentation sequences...
+              </div>
+            ) : demoSequences.length === 0 ? (
+              <div className="p-6 text-center text-xs text-[#81786E] bg-[#F8F5EF] rounded-xl border border-[#EFE7DB]">
+                No verified demo sequences found in manifest.
+              </div>
+            ) : (() => {
+              const activeDemo = demoSequences.find((d) => d.sequence_id === selectedDemoId) || demoSequences[0];
+              const activeDemoResult = activeDemo?.model_results?.[selectedModel] || activeDemo?.model_results?.['transformer'];
+
+              return (
+                <div className="space-y-4">
+                  {/* Sequence Dropdown Picker */}
+                  <select
+                    value={selectedDemoId}
+                    onChange={(e) => setSelectedDemoId(e.target.value)}
+                    className="w-full text-xs font-semibold text-[#302721] bg-[#F8F5EF] border border-[#EFE7DB] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C66A4E]"
+                  >
+                    {demoSequences.map((s) => (
+                      <option key={s.sequence_id} value={s.sequence_id}>
+                        {s.sequence_id} · {s.game_name} · Target: {s.ground_truth.action_label} (Frame {s.target_frame})
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Verified Details Card */}
+                  {activeDemo && (
+                    <div className="p-5 rounded-xl bg-[#F8F5EF] border border-[#EFE7DB] space-y-4">
+                      {/* Top Metadata Row */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#EFE7DB] text-xs">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-[#302721] text-sm">{activeDemo.sequence_id}</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C66A4E]/10 text-[#C66A4E]">
+                            {activeDemo.game_name}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-3 text-[11px] text-[#81786E]">
+                          <span>Clip: <code className="text-[#302721]">{activeDemo.clip_id.slice(0, 24)}...</code></span>
+                          <span>Input Range: <strong className="text-[#302721]">Frames {activeDemo.input_frame_range[0]}–{activeDemo.input_frame_range[1]}</strong></span>
+                          <span>Target: <strong className="text-[#C66A4E]">Frame {activeDemo.target_frame}</strong></span>
+                        </div>
+                      </div>
+
+                      {/* Side-by-Side Comparison: Ground Truth vs Predicted Values */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        {/* Real Ground Truth */}
+                        <div className="p-4 rounded-xl bg-white border border-[#EFE7DB] space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-[#302721] flex items-center">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#059669] mr-1.5" />
+                              Genuine Ground Truth (Target Frame {activeDemo.target_frame})
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#059669]/10 text-[#059669]">
+                              ACTUAL TELEMETRY
+                            </span>
+                          </div>
+
+                          <div className="text-[11px] font-semibold text-[#C66A4E] bg-[#C66A4E]/5 p-2 rounded-lg border border-[#C66A4E]/20">
+                            Combat Action: {activeDemo.ground_truth.action_label}
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-[11px] font-bold text-[#81786E]">Continuous Joysticks [-1, 1]:</div>
+                            <div className="grid grid-cols-2 gap-1 text-[11px] font-mono text-[#302721]">
+                              <span>Strafe LX: <strong>{activeDemo.ground_truth.continuous.strafe_lx >= 0 ? `+${activeDemo.ground_truth.continuous.strafe_lx}` : activeDemo.ground_truth.continuous.strafe_lx}</strong></span>
+                              <span>Move LY: <strong>{activeDemo.ground_truth.continuous.move_ly >= 0 ? `+${activeDemo.ground_truth.continuous.move_ly}` : activeDemo.ground_truth.continuous.move_ly}</strong></span>
+                              <span>Turn Yaw RX: <strong>{activeDemo.ground_truth.continuous.turn_yaw_rx >= 0 ? `+${activeDemo.ground_truth.continuous.turn_yaw_rx}` : activeDemo.ground_truth.continuous.turn_yaw_rx}</strong></span>
+                              <span>Pitch RY: <strong>{activeDemo.ground_truth.continuous.look_pitch_ry >= 0 ? `+${activeDemo.ground_truth.continuous.look_pitch_ry}` : activeDemo.ground_truth.continuous.look_pitch_ry}</strong></span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1 pt-1 border-t border-[#EFE7DB]">
+                            <div className="text-[11px] font-bold text-[#81786E]">Discrete Buttons (Binary):</div>
+                            <div className="grid grid-cols-3 gap-1 text-[11px] font-mono">
+                              <span className={activeDemo.ground_truth.discrete.rt_fire > 0 ? 'text-[#C66A4E] font-bold' : 'text-[#81786E]'}>Fire (RT): {activeDemo.ground_truth.discrete.rt_fire}</span>
+                              <span className={activeDemo.ground_truth.discrete.lt_ads > 0 ? 'text-[#4A6FA5] font-bold' : 'text-[#81786E]'}>Aim (LT): {activeDemo.ground_truth.discrete.lt_ads}</span>
+                              <span className={activeDemo.ground_truth.discrete.r3_melee > 0 ? 'text-[#8E7DBE] font-bold' : 'text-[#81786E]'}>Melee: {activeDemo.ground_truth.discrete.r3_melee}</span>
+                              <span className={activeDemo.ground_truth.discrete.a_jump > 0 ? 'text-[#82917A] font-bold' : 'text-[#81786E]'}>Jump: {activeDemo.ground_truth.discrete.a_jump}</span>
+                              <span className={activeDemo.ground_truth.discrete.x_reload > 0 ? 'text-[#B95D3B] font-bold' : 'text-[#81786E]'}>Reload: {activeDemo.ground_truth.discrete.x_reload}</span>
+                              <span className={activeDemo.ground_truth.discrete.y_switch > 0 ? 'text-[#E5A93C] font-bold' : 'text-[#81786E]'}>Switch: {activeDemo.ground_truth.discrete.y_switch}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Model Prediction */}
+                        <div className="p-4 rounded-xl bg-white border border-[#EFE7DB] space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-[#302721] flex items-center">
+                              <Cpu className="w-3.5 h-3.5 text-[#C66A4E] mr-1.5" />
+                              Model Forecast: {activeDemoResult?.model_name || 'Transformer'}
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#C66A4E]/10 text-[#C66A4E]">
+                              {activeDemoResult?.checkpoint || 'CHECKPOINT INFERENCE'}
+                            </span>
+                          </div>
+
+                          <div className="text-[11px] font-semibold text-[#059669] bg-[#059669]/5 p-2 rounded-lg border border-[#059669]/20 flex items-center justify-between">
+                            <span>Predicted: {activeDemoResult?.predicted_action_label}</span>
+                            <span className="font-mono text-[10px] text-[#81786E]">MSE: {activeDemoResult?.continuous_mse}</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-[11px] font-bold text-[#81786E]">Predicted Joysticks (Continuous):</div>
+                            <div className="grid grid-cols-2 gap-1 text-[11px] font-mono text-[#302721]">
+                              <span>Strafe LX: <strong>{activeDemoResult?.predicted_continuous.strafe_lx >= 0 ? `+${activeDemoResult?.predicted_continuous.strafe_lx}` : activeDemoResult?.predicted_continuous.strafe_lx}</strong></span>
+                              <span>Move LY: <strong>{activeDemoResult?.predicted_continuous.move_ly >= 0 ? `+${activeDemoResult?.predicted_continuous.move_ly}` : activeDemoResult?.predicted_continuous.move_ly}</strong></span>
+                              <span>Turn Yaw RX: <strong>{activeDemoResult?.predicted_continuous.turn_yaw_rx >= 0 ? `+${activeDemoResult?.predicted_continuous.turn_yaw_rx}` : activeDemoResult?.predicted_continuous.turn_yaw_rx}</strong></span>
+                              <span>Pitch RY: <strong>{activeDemoResult?.predicted_continuous.look_pitch_ry >= 0 ? `+${activeDemoResult?.predicted_continuous.look_pitch_ry}` : activeDemoResult?.predicted_continuous.look_pitch_ry}</strong></span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1 pt-1 border-t border-[#EFE7DB]">
+                            <div className="text-[11px] font-bold text-[#81786E]">Predicted Probabilities (Sigmoid):</div>
+                            <div className="grid grid-cols-3 gap-1 text-[11px] font-mono">
+                              <span className={(activeDemoResult?.predicted_discrete_probs?.RT ?? 0) >= 0.3 ? 'text-[#C66A4E] font-bold' : 'text-[#81786E]'}>
+                                RT: {((activeDemoResult?.predicted_discrete_probs?.RT ?? 0) * 100).toFixed(1)}%
+                              </span>
+                              <span className={(activeDemoResult?.predicted_discrete_probs?.LT ?? 0) >= 0.3 ? 'text-[#4A6FA5] font-bold' : 'text-[#81786E]'}>
+                                LT: {((activeDemoResult?.predicted_discrete_probs?.LT ?? 0) * 100).toFixed(1)}%
+                              </span>
+                              <span className={(activeDemoResult?.predicted_discrete_probs?.R3 ?? 0) >= 0.3 ? 'text-[#8E7DBE] font-bold' : 'text-[#81786E]'}>
+                                R3: {((activeDemoResult?.predicted_discrete_probs?.R3 ?? 0) * 100).toFixed(1)}%
+                              </span>
+                              <span className={(activeDemoResult?.predicted_discrete_probs?.A ?? 0) >= 0.3 ? 'text-[#82917A] font-bold' : 'text-[#81786E]'}>
+                                A: {((activeDemoResult?.predicted_discrete_probs?.A ?? 0) * 100).toFixed(1)}%
+                              </span>
+                              <span className={(activeDemoResult?.predicted_discrete_probs?.X ?? 0) >= 0.3 ? 'text-[#B95D3B] font-bold' : 'text-[#81786E]'}>
+                                X: {((activeDemoResult?.predicted_discrete_probs?.X ?? 0) * 100).toFixed(1)}%
+                              </span>
+                              <span className={(activeDemoResult?.predicted_discrete_probs?.Y ?? 0) >= 0.3 ? 'text-[#E5A93C] font-bold' : 'text-[#81786E]'}>
+                                Y: {((activeDemoResult?.predicted_discrete_probs?.Y ?? 0) * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Rule & Verification Status Banner */}
+                      <div className="p-3.5 rounded-xl bg-white border border-[#EFE7DB] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div>
+                          <span className="font-bold text-[#302721] block">Defined Academic Evaluation Rule:</span>
+                          <span className="text-[11px] text-[#81786E]">{activeDemoResult?.evaluation_rule}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 shrink-0">
+                          <span className="text-[11px] text-[#81786E]">Verification Status:</span>
+                          <span className="px-2.5 py-1 rounded-full font-bold text-xs bg-[#059669]/10 text-[#059669] border border-[#059669]/30 flex items-center space-x-1">
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>{activeDemoResult?.passed ? 'PASSED (VERIFIED)' : 'PARTIAL'}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Quick Run Inference on This Demo Sequence */}
+                      <button
+                        onClick={() => {
+                          setSelectedSeqIndex(activeDemo.sequence_index);
+                          setSelectedGame(activeDemo.source_game);
+                          executePrediction(activeDemo.sequence_index, selectedModel, undefined);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl bg-[#C66A4E] hover:bg-[#B95D3B] text-white text-xs font-bold shadow-xs transition flex items-center justify-center space-x-2"
+                      >
+                        <Zap className="w-4 h-4" />
+                        <span>Execute Live Neural Forward Pass on Sequence #{activeDemo.sequence_index + 1}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
         {/* Input Source A: Real Gameplay Sequence Picker */}
         {inputMode === 'real_sequence' && (
+
           <div className="space-y-4 pt-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <label className="text-xs font-bold text-[#302721]">
