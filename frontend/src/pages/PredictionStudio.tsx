@@ -363,13 +363,12 @@ export const PredictionStudio: React.FC = () => {
                 <div
                   key={m.id}
                   onClick={() => isAvailable && handleModelSelect(m.id)}
-                  className={`relative p-5 rounded-xl border-2 transition-all flex flex-col justify-between ${
-                    isSelected
-                      ? 'border-[#C66A4E] bg-white shadow-sm ring-2 ring-[#C66A4E]/20'
-                      : isAvailable
+                  className={`relative p-5 rounded-xl border-2 transition-all flex flex-col justify-between ${isSelected
+                    ? 'border-[#C66A4E] bg-white shadow-sm ring-2 ring-[#C66A4E]/20'
+                    : isAvailable
                       ? 'border-[#EFE7DB] bg-white hover:border-[#C66A4E]/50 cursor-pointer'
                       : 'border-gray-200 bg-[#F8F5EF]/60 opacity-75 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   <div>
                     <div className="flex items-start justify-between">
@@ -399,13 +398,12 @@ export const PredictionStudio: React.FC = () => {
 
                       {/* Selected Radio Indicator */}
                       <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ml-3 ${
-                          isSelected
-                            ? 'border-[#C66A4E] bg-[#C66A4E] text-white'
-                            : isAvailable
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ml-3 ${isSelected
+                          ? 'border-[#C66A4E] bg-[#C66A4E] text-white'
+                          : isAvailable
                             ? 'border-[#81786E]/40'
                             : 'border-gray-300 bg-gray-100'
-                        }`}
+                          }`}
                       >
                         {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                       </div>
@@ -432,11 +430,10 @@ export const PredictionStudio: React.FC = () => {
 
                     <div>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                          isAvailable
-                            ? 'bg-[#82917A]/15 text-[#82917A]'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${isAvailable
+                          ? 'bg-[#82917A]/15 text-[#82917A]'
+                          : 'bg-amber-100 text-amber-800'
+                          }`}
                       >
                         {isAvailable ? '✓ Ready for Inference' : m.status}
                       </span>
@@ -496,11 +493,10 @@ export const PredictionStudio: React.FC = () => {
                   <div
                     key={g.id}
                     onClick={() => handleGameSelect(g.id)}
-                    className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                      isSelected
-                        ? 'border-[#C66A4E] bg-white shadow-sm ring-2 ring-[#C66A4E]/20'
-                        : 'border-[#EFE7DB] bg-white hover:border-[#C66A4E]/40'
-                    }`}
+                    className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${isSelected
+                      ? 'border-[#C66A4E] bg-white shadow-sm ring-2 ring-[#C66A4E]/20'
+                      : 'border-[#EFE7DB] bg-white hover:border-[#C66A4E]/40'
+                      }`}
                   >
                     <div>
                       <div className="flex items-center justify-between">
@@ -555,32 +551,29 @@ export const PredictionStudio: React.FC = () => {
           <div className="flex flex-wrap items-center p-1 rounded-xl bg-[#F8F5EF] border border-[#EFE7DB] self-start sm:self-auto gap-1">
             <button
               onClick={() => setInputMode('tested_demo')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${
-                inputMode === 'tested_demo'
-                  ? 'bg-[#C66A4E] text-white shadow-xs'
-                  : 'text-[#81786E] hover:text-[#302721]'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${inputMode === 'tested_demo'
+                ? 'bg-[#C66A4E] text-white shadow-xs'
+                : 'text-[#81786E] hover:text-[#302721]'
+                }`}
             >
               <Star className="w-3.5 h-3.5 fill-current" />
-              <span>Tested Demo Sequences</span>
+              <span>Sequences</span>
             </button>
             <button
               onClick={() => setInputMode('real_sequence')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                inputMode === 'real_sequence'
-                  ? 'bg-white text-[#302721] shadow-xs border border-[#EFE7DB]'
-                  : 'text-[#81786E] hover:text-[#302721]'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${inputMode === 'real_sequence'
+                ? 'bg-white text-[#302721] shadow-xs border border-[#EFE7DB]'
+                : 'text-[#81786E] hover:text-[#302721]'
+                }`}
             >
               Browse All Sequences ({sequences.length})
             </button>
             <button
               onClick={() => setInputMode('custom_situation')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                inputMode === 'custom_situation'
-                  ? 'bg-white text-[#302721] shadow-xs border border-[#EFE7DB]'
-                  : 'text-[#81786E] hover:text-[#302721]'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${inputMode === 'custom_situation'
+                ? 'bg-white text-[#302721] shadow-xs border border-[#EFE7DB]'
+                : 'text-[#81786E] hover:text-[#302721]'
+                }`}
             >
               Customize Situation (What-If)
             </button>
@@ -595,9 +588,6 @@ export const PredictionStudio: React.FC = () => {
                 <Star className="w-3.5 h-3.5 text-[#C66A4E] mr-1.5 fill-current" />
                 Select a Tested Presentation Sequence ({demoSequences.length} Verified Clips):
               </label>
-              <span className="text-[11px] text-[#059669] font-semibold bg-[#059669]/10 px-2 py-0.5 rounded border border-[#059669]/20">
-                Pre-Checked Real Ground Truth & Neural Predictions
-              </span>
             </div>
 
             {demoLoading ? (
@@ -888,11 +878,10 @@ export const PredictionStudio: React.FC = () => {
                           [item.key]: !isActive,
                         }))
                       }
-                      className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
-                        isActive
-                          ? 'border-[#C66A4E] bg-[#C66A4E]/10 text-[#C66A4E] font-bold shadow-xs'
-                          : 'border-[#EFE7DB] bg-white text-[#81786E] hover:border-[#81786E]'
-                      }`}
+                      className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${isActive
+                        ? 'border-[#C66A4E] bg-[#C66A4E]/10 text-[#C66A4E] font-bold shadow-xs'
+                        : 'border-[#EFE7DB] bg-white text-[#81786E] hover:border-[#81786E]'
+                        }`}
                     >
                       <div className="flex items-center justify-between text-base">
                         <span>{item.icon}</span>
@@ -928,11 +917,10 @@ export const PredictionStudio: React.FC = () => {
                     <button
                       key={m.id}
                       onClick={() => setConditions((prev) => ({ ...prev, movement: m.id as any }))}
-                      className={`p-2.5 rounded-lg border text-left text-xs transition-all ${
-                        conditions.movement === m.id
-                          ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
-                          : 'border-[#EFE7DB] bg-white text-[#81786E] hover:border-[#81786E]'
-                      }`}
+                      className={`p-2.5 rounded-lg border text-left text-xs transition-all ${conditions.movement === m.id
+                        ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
+                        : 'border-[#EFE7DB] bg-white text-[#81786E] hover:border-[#81786E]'
+                        }`}
                     >
                       <div>{m.label}</div>
                       <div className="text-[10px] text-[#81786E] font-mono">{m.val}</div>
@@ -957,11 +945,10 @@ export const PredictionStudio: React.FC = () => {
                     <button
                       key={c.id}
                       onClick={() => setConditions((prev) => ({ ...prev, camera: c.id as any }))}
-                      className={`p-2.5 rounded-lg border text-left text-xs transition-all ${
-                        conditions.camera === c.id
-                          ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
-                          : 'border-[#EFE7DB] bg-white text-[#81786E] hover:border-[#81786E]'
-                      }`}
+                      className={`p-2.5 rounded-lg border text-left text-xs transition-all ${conditions.camera === c.id
+                        ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
+                        : 'border-[#EFE7DB] bg-white text-[#81786E] hover:border-[#81786E]'
+                        }`}
                     >
                       <div>{c.label}</div>
                       <div className="text-[10px] text-[#81786E] font-mono">{c.val}</div>
@@ -1021,11 +1008,10 @@ export const PredictionStudio: React.FC = () => {
         <button
           onClick={handleRunPrediction}
           disabled={predicting || !activeGameInfo?.is_available || sequences.length === 0}
-          className={`w-full sm:w-auto min-w-[280px] px-8 py-4 rounded-xl text-white font-bold text-base shadow-md transition-all flex items-center justify-center space-x-3 mx-auto ${
-            predicting || !activeGameInfo?.is_available || sequences.length === 0
-              ? 'bg-[#81786E]/50 cursor-not-allowed'
-              : 'bg-[#C66A4E] hover:bg-[#B95D3B] hover:shadow-lg active:scale-95'
-          }`}
+          className={`w-full sm:w-auto min-w-[280px] px-8 py-4 rounded-xl text-white font-bold text-base shadow-md transition-all flex items-center justify-center space-x-3 mx-auto ${predicting || !activeGameInfo?.is_available || sequences.length === 0
+            ? 'bg-[#81786E]/50 cursor-not-allowed'
+            : 'bg-[#C66A4E] hover:bg-[#B95D3B] hover:shadow-lg active:scale-95'
+            }`}
         >
           <Zap className={`w-5 h-5 ${predicting ? 'animate-bounce' : ''}`} />
           <span>
@@ -1288,11 +1274,10 @@ export const PredictionStudio: React.FC = () => {
                       aim_down_sights: !prev.aim_down_sights
                     }))
                   }
-                  className={`p-3 rounded-xl border text-left text-xs transition-all ${
-                    whatIfConditions.aim_down_sights
-                      ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
-                      : 'border-[#EFE7DB] bg-white text-[#81786E]'
-                  }`}
+                  className={`p-3 rounded-xl border text-left text-xs transition-all ${whatIfConditions.aim_down_sights
+                    ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
+                    : 'border-[#EFE7DB] bg-white text-[#81786E]'
+                    }`}
                 >
                   <div className="font-bold">Aim Down Sights (LT)</div>
                   <div className="text-[10px] text-[#81786E] mt-0.5">
@@ -1307,11 +1292,10 @@ export const PredictionStudio: React.FC = () => {
                       fire: !prev.fire
                     }))
                   }
-                  className={`p-3 rounded-xl border text-left text-xs transition-all ${
-                    whatIfConditions.fire
-                      ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
-                      : 'border-[#EFE7DB] bg-white text-[#81786E]'
-                  }`}
+                  className={`p-3 rounded-xl border text-left text-xs transition-all ${whatIfConditions.fire
+                    ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
+                    : 'border-[#EFE7DB] bg-white text-[#81786E]'
+                    }`}
                 >
                   <div className="font-bold">Fire Trigger (RT)</div>
                   <div className="text-[10px] text-[#81786E] mt-0.5">
@@ -1326,11 +1310,10 @@ export const PredictionStudio: React.FC = () => {
                       jump: !prev.jump
                     }))
                   }
-                  className={`p-3 rounded-xl border text-left text-xs transition-all ${
-                    whatIfConditions.jump
-                      ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
-                      : 'border-[#EFE7DB] bg-white text-[#81786E]'
-                  }`}
+                  className={`p-3 rounded-xl border text-left text-xs transition-all ${whatIfConditions.jump
+                    ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
+                    : 'border-[#EFE7DB] bg-white text-[#81786E]'
+                    }`}
                 >
                   <div className="font-bold">Jump Impulse (A)</div>
                   <div className="text-[10px] text-[#81786E] mt-0.5">
@@ -1345,11 +1328,10 @@ export const PredictionStudio: React.FC = () => {
                       camera: prev.camera === 'turn_right' ? 'steady' : 'turn_right'
                     }))
                   }
-                  className={`p-3 rounded-xl border text-left text-xs transition-all ${
-                    whatIfConditions.camera === 'turn_right'
-                      ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
-                      : 'border-[#EFE7DB] bg-white text-[#81786E]'
-                  }`}
+                  className={`p-3 rounded-xl border text-left text-xs transition-all ${whatIfConditions.camera === 'turn_right'
+                    ? 'border-[#C66A4E] bg-[#C66A4E]/10 font-bold text-[#C66A4E]'
+                    : 'border-[#EFE7DB] bg-white text-[#81786E]'
+                    }`}
                 >
                   <div className="font-bold">Camera Turn (RX)</div>
                   <div className="text-[10px] text-[#81786E] mt-0.5">
@@ -1425,13 +1407,12 @@ export const PredictionStudio: React.FC = () => {
                         <div key={action} className="p-2.5 rounded-lg bg-white border border-[#EFE7DB] text-center">
                           <div className="text-[10px] text-[#81786E] truncate">{action}</div>
                           <div
-                            className={`font-mono font-bold text-xs mt-1 ${
-                              shift > 0
-                                ? 'text-emerald-700'
-                                : shift < 0
+                            className={`font-mono font-bold text-xs mt-1 ${shift > 0
+                              ? 'text-emerald-700'
+                              : shift < 0
                                 ? 'text-amber-700'
                                 : 'text-[#81786E]'
-                            }`}
+                              }`}
                           >
                             {shift > 0 ? `+${shift}%` : `${shift}%`}
                           </div>

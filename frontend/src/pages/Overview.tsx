@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Clock,
   Layers,
-  Activity,
   BookOpen,
   HelpCircle,
   ExternalLink,
@@ -60,10 +59,6 @@ export const Overview: React.FC = () => {
       <div className="bg-white border border-[#EFE7DB] rounded-xl p-8 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center space-x-2 text-xs font-semibold px-2.5 py-1 rounded bg-[#C66A4E]/10 text-[#C66A4E]">
-              <Activity className="w-3.5 h-3.5" />
-              <span>B.Tech Final-Semester Project Defense · Department of AIML</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#302721] tracking-tight leading-tight">
               GAMER-TWIN: A Personalized Deep Learning Framework for Modeling and Predicting Player Behaviour
             </h1>

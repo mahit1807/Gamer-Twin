@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Database,
-  ExternalLink,
   Table,
   CheckCircle2,
   AlertTriangle,
@@ -89,14 +88,6 @@ export const DatasetExplorer: React.FC = () => {
               <Database className="w-6 h-6 mr-2.5 text-[#C66A4E]" />
               EgoCS-400K Dataset Explorer
             </h1>
-            <a
-              href="https://github.com/EgoCS-400K/Dataset"
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs px-2.5 py-1 rounded-full bg-white border border-[#EFE7DB] text-[#C66A4E] hover:bg-[#F8F5EF] flex items-center font-medium shadow-xs"
-            >
-              Official Repo <ExternalLink className="w-3 h-3 ml-1" />
-            </a>
           </div>
           <p className="text-xs sm:text-sm text-[#81786E] mt-1">
             Grounded inspection of high-frequency Counter-Strike telemetry, temporal action chains, and sequence construction.
