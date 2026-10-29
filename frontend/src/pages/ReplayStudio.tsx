@@ -287,7 +287,6 @@ export const ReplayStudio: React.FC = () => {
             >
               <option value="transformer">Transformer (Primary)</option>
               <option value="transformer_ssl">Transformer SSL</option>
-              <option value="lstm_transformer">LSTM + Transformer</option>
               <option value="lstm_baseline">LSTM Baseline</option>
             </select>
           </div>

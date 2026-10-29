@@ -28,7 +28,6 @@ import { api, ModelComparisonItem } from '../services/api';
 
 const MODEL_COLORS: Record<string, string> = {
   lstm_baseline: '#81786E',
-  lstm_transformer: '#9CA3AF',
   transformer: '#C66A4E',
   transformer_ssl: '#059669',
 };
@@ -54,7 +53,8 @@ export const ModelEvaluation: React.FC = () => {
     setLoading(true);
     api.getExperimentComparison()
       .then((data) => {
-        setComparisons(data || []);
+        const filtered = (data || []).filter((m) => m.model_variant !== 'lstm_transformer');
+        setComparisons(filtered);
         setLoading(false);
       })
       .catch((err) => {
@@ -241,7 +241,7 @@ export const ModelEvaluation: React.FC = () => {
           <Cpu className="w-4 h-4 mr-2 text-[#C66A4E]" />
           Architectures & Verified Checkpoint Registry
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           {/* Transformer */}
           <div className="p-4 rounded-xl bg-[#F8F5EF] border border-[#C66A4E] space-y-1.5 ring-1 ring-[#C66A4E]/30">
             <div className="flex justify-between items-center">
@@ -284,21 +284,6 @@ export const ModelEvaluation: React.FC = () => {
             <div className="pt-1 flex items-center justify-between text-[10px] text-[#81786E]">
               <span><strong>Checkpoint:</strong> <code>transformer_ssl_crossfps_best.pt</code></span>
               <span className="text-[#059669] font-semibold">Trained & Verified</span>
-            </div>
-          </div>
-
-          {/* LSTM + Transformer Hybrid (Untrained Disclosure) */}
-          <div className="p-4 rounded-xl bg-[#F8F5EF] border border-dashed border-[#81786E]/40 space-y-1.5 opacity-80">
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-[#81786E]">4. LSTM + Transformer Hybrid</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] bg-[#81786E]/10 text-[#81786E] font-medium">Untrained</span>
-            </div>
-            <p className="text-[11px] text-[#81786E] leading-relaxed">
-              Proposed hybrid architecture combining recurrent local momentum tracking with global self-attention.
-            </p>
-            <div className="pt-1 flex items-center justify-between text-[10px] text-[#81786E]">
-              <span><strong>Checkpoint:</strong> None (Not trained on CrossFPS)</span>
-              <span className="text-[#81786E] font-semibold">Disabled for Prediction</span>
             </div>
           </div>
         </div>
@@ -346,7 +331,9 @@ export const ModelEvaluation: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {comparisons.map((c) => {
+                  {comparisons
+                    .filter((c) => c.model_variant !== 'lstm_transformer')
+                    .map((c) => {
                     const isTrained = c.is_available !== false && c.test_samples > 0;
                     return (
                       <tr key={c.model_variant} className={`border-b border-[#EFE7DB] hover:bg-[#F8F5EF] transition ${!isTrained ? 'opacity-60 bg-gray-50/50' : ''}`}>
@@ -381,11 +368,10 @@ export const ModelEvaluation: React.FC = () => {
                         </td>
                         <td className="py-3 px-3 text-center">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                              isTrained
-                                ? 'bg-[#82917A]/15 text-[#82917A] border border-[#82917A]/30'
-                                : 'bg-[#81786E]/10 text-[#81786E] border border-[#81786E]/20'
-                            }`}
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold ${isTrained
+                              ? 'bg-[#82917A]/15 text-[#82917A] border border-[#82917A]/30'
+                              : 'bg-[#81786E]/10 text-[#81786E] border border-[#81786E]/20'
+                              }`}
                           >
                             {c.status}
                           </span>

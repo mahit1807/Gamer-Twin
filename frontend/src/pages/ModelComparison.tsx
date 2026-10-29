@@ -26,7 +26,6 @@ import { api, ModelComparisonItem } from '../services/api';
 
 const MODEL_COLORS: Record<string, string> = {
   lstm_baseline: '#81786E',
-  lstm_transformer: '#B95D3B',
   transformer: '#C66A4E',
   transformer_ssl: '#059669',
 };
@@ -43,7 +42,8 @@ export const ModelComparison: React.FC = () => {
     setLoading(true);
     api.getExperimentComparison()
       .then((data) => {
-        setComparisons(data || []);
+        const filtered = (data || []).filter((m) => m.model_variant !== 'lstm_transformer');
+        setComparisons(filtered);
         setLoading(false);
       })
       .catch((err) => {
@@ -264,7 +264,6 @@ export const ModelComparison: React.FC = () => {
               >
                 <option value="transformer">Transformer Encoder (Primary)</option>
                 <option value="transformer_ssl">Transformer SSL</option>
-                <option value="lstm_transformer">LSTM + Transformer</option>
                 <option value="lstm_baseline">LSTM Baseline</option>
               </select>
             </div>

@@ -1217,9 +1217,7 @@ export const PredictionStudio: React.FC = () => {
                     <span className="text-xs font-bold text-[#81786E] uppercase tracking-wider">
                       Continuous Trajectory Head
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#82917A]/15 text-[#82917A] border border-[#82917A]/30">
-                      4-DoF Analog Channels
-                    </span>
+
                   </div>
 
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">

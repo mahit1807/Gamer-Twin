@@ -27,6 +27,7 @@ Dataset/
 *.zip
 *.parquet
 *.npz
+*.xlsx
 outputs/processed/embeddings_cache_*.json
 
 # Deep learning models & checkpoints
